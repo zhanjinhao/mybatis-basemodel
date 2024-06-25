@@ -20,7 +20,6 @@ import net.sf.jsqlparser.statement.insert.Insert;
 import net.sf.jsqlparser.statement.update.Update;
 import org.apache.ibatis.binding.MapperMethod;
 import org.apache.ibatis.cache.CacheKey;
-import org.apache.ibatis.executor.BatchExecutor;
 import org.apache.ibatis.executor.Executor;
 import org.apache.ibatis.executor.parameter.ParameterHandler;
 import org.apache.ibatis.executor.resultset.ResultSetHandler;
@@ -171,8 +170,7 @@ public class BaseModelInterceptor implements Interceptor {
   private String doRewriteSql(MappedStatement mappedStatement, AdditionalParamWrapper<?> additionalParamWrapper,
                               JSqlParserStatementWrapper jSqlParserStatementWrapper) {
     List<Column> columnList = jSqlParserStatementWrapper.getColumnList();
-    Map<String, AdditionalParamAttr> additionalParamMap = additionalParamWrapper.getAdditionalParamAttrList()
-            .stream().collect(Collectors.toMap(AdditionalParamAttr::getName, a -> a));
+    Map<String, AdditionalParamAttr> additionalParamMap = additionalParamWrapper.getInjectedAdditionalParamAttrMap();
     List<String> columnNameList = formatColumnName(columnList);
     for (Map.Entry<String, AdditionalParamAttr> entry : additionalParamMap.entrySet()) {
       AdditionalParamAttr additionalParamAttr = entry.getValue();
@@ -255,8 +253,7 @@ public class BaseModelInterceptor implements Interceptor {
     Configuration configuration = mappedStatement.getConfiguration();
 
     List<Column> columnList = jSqlParserStatementWrapper.getColumnList();
-    Map<String, AdditionalParamAttr> additionalParamMap = additionalParamWrapper.getAdditionalParamAttrList()
-            .stream().collect(Collectors.toMap(AdditionalParamAttr::getName, a -> a));
+    Map<String, AdditionalParamAttr> additionalParamMap = additionalParamWrapper.getInjectedAdditionalParamAttrMap();
     List<String> columnNameList = formatColumnName(columnList);
     List<ParameterMapping> parameterMappingList = new ArrayList<>();
     for (Map.Entry<String, AdditionalParamAttr> entry : additionalParamMap.entrySet()) {
@@ -477,19 +474,20 @@ public class BaseModelInterceptor implements Interceptor {
     BoundSql boundSql = (BoundSql) metaObject.getValue("boundSql");
 
     AdditionalParamWrapper<?> additionalParamWrapper = (AdditionalParamWrapper<?>) parameterObject;
-    List<AdditionalParamAttr> additionalParamList = additionalParamWrapper.getAdditionalParamAttrList();
+    List<AdditionalParamAttr> additionalParamAttrList = additionalParamWrapper.getInjectedAdditionalParamAttrList();
     try {
-      for (AdditionalParamAttr additionalParam : additionalParamList) {
-        if (additionalParam.isIfValue()) {
-          boundSql.setAdditionalParameter(additionalParam.getName(), baseModelELEvaluator.evaluate(additionalParam.getExpression(), additionalParamWrapper));
+      for (AdditionalParamAttr additionalParamAttr : additionalParamAttrList) {
+        if (additionalParamAttr.isIfValue()) {
+          boundSql.setAdditionalParameter(additionalParamAttr.getName(),
+                  additionalParamAttr.getOrEvaluate(additionalParamWrapper.getOriginalParam(), baseModelELEvaluator::evaluate));
         }
       }
       boundSql.setAdditionalParameter(AdditionalParamWrapper.ORIGINAL_PARAM_NAME, additionalParamWrapper.getOriginalParam());
       return invocation.proceed();
     } finally {
-      for (AdditionalParamAttr additionalParam : additionalParamList) {
-        if (additionalParam.isIfValue()) {
-          boundSql.getAdditionalParameters().remove(additionalParam.getName());
+      for (AdditionalParamAttr additionalParamAttr : additionalParamAttrList) {
+        if (additionalParamAttr.isIfValue()) {
+          boundSql.getAdditionalParameters().remove(additionalParamAttr.getName());
         }
       }
       boundSql.getAdditionalParameters().remove(AdditionalParamWrapper.ORIGINAL_PARAM_NAME);
@@ -509,47 +507,46 @@ public class BaseModelInterceptor implements Interceptor {
       // - 返回MapperMethod.ParamMap
       Object arg = args[1];
       if (arg == null) {
-        AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(
+        AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(baseModelELEvaluator,
                 null, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
-        paramWrapper.valid();
+        paramWrapper.init();
         args[1] = paramWrapper;
       } else {
         if (arg instanceof MapperMethod.ParamMap) {
-          AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(
+          AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(baseModelELEvaluator,
                   arg, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
           paramWrapper.putAll((MapperMethod.ParamMap<?>) arg);
-          paramWrapper.setAdditionalParamAttrList(Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
-          paramWrapper.valid();
+          paramWrapper.init();
           args[1] = paramWrapper;
         }
         // StrictMap在3.5.5之前是 org.apache.ibatis.session.defaults.DefaultSqlSession.wrapCollection() 的返回值。兼容一下。
         else if (arg instanceof DefaultSqlSession.StrictMap) {
-          AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(
+          AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(baseModelELEvaluator,
                   arg, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
           paramWrapper.putAll((DefaultSqlSession.StrictMap<?>) arg);
-          paramWrapper.valid();
+          paramWrapper.init();
           args[1] = paramWrapper;
         }
         // 一个参数且没有@Param时走这个地方
         else {
           TypeHandlerRegistry typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
           if (typeHandlerRegistry.hasTypeHandler(arg.getClass())) {
-            AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(
+            AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(baseModelELEvaluator,
                     arg, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
             paramWrapper.setFallback(true);
-            paramWrapper.valid();
+            paramWrapper.init();
             args[1] = paramWrapper;
           } else if (arg instanceof BaseModel) {
             BaseModel baseModel = (BaseModel) arg;
-            BaseModelAdditionalParamWrapper paramWrapper = new BaseModelAdditionalParamWrapper(
+            BaseModelAdditionalParamWrapper paramWrapper = new BaseModelAdditionalParamWrapper(baseModelELEvaluator,
                     baseModel, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
-            paramWrapper.valid();
+            paramWrapper.init();
             replaceKeyGenerator(executor, mappedStatement);
             args[1] = paramWrapper;
           } else {
-            PojoAdditionalParamWrapper<?> paramWrapper = new PojoAdditionalParamWrapper<>(
+            PojoAdditionalParamWrapper<?> paramWrapper = new PojoAdditionalParamWrapper<>(baseModelELEvaluator,
                     arg, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
-            paramWrapper.valid();
+            paramWrapper.init();
             replaceKeyGenerator(executor, mappedStatement);
             args[1] = paramWrapper;
           }
@@ -583,6 +580,7 @@ public class BaseModelInterceptor implements Interceptor {
     additionalParamAttr.setExpression(additionalParam.expression());
     additionalParamAttr.setJdbcType(additionalParam.jdbcType());
     additionalParamAttr.setIfValue(additionalParam.ifValue());
+    additionalParamAttr.setIfInjected(additionalParam.ifInjected());
     return additionalParamAttr;
   }
 

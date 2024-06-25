@@ -113,5 +113,15 @@ public interface UserMapper {
   @AdditionalParam(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
   int updateById4(SimpleUser user);
 
+  // todo 注入列和注入参数应该分为两个注解
+  @AdditionalParam(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  User queryByIdAndModifier(@Param("id") Long id);
+
+  @AdditionalParam(name = "modifier2", expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  User queryByIdAndModifier2(User user);
+
+  @AdditionalParam(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  User queryByIdAndModifier(User user);
+
 }
 

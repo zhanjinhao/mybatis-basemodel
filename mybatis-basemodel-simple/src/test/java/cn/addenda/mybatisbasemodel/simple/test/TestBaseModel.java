@@ -1,8 +1,10 @@
 package cn.addenda.mybatisbasemodel.simple.test;
 
+import cn.addenda.mybatisbasemodel.core.BaseModelException;
 import cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource;
 import cn.addenda.mybatisbasemodel.simple.User;
 import cn.addenda.mybatisbasemodel.simple.UserMapper;
+import org.apache.ibatis.exceptions.PersistenceException;
 import org.apache.ibatis.io.Resources;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -87,6 +89,45 @@ class TestBaseModel {
         Assertions.assertNotEquals(user.getCreateTime(), user.getModifyTime());
       }
     });
+
+
+    SimpleBaseModelSource.runWithUser("lisi", () -> {
+      try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        User param = new User();
+        param.setId(id.get());
+        User user1 = mapper.queryByIdAndModifier2(param);
+        Assertions.assertNotNull(user1);
+      }
+    });
+
+
+    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+      try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        User param = new User();
+        param.setId(id.get());
+        User user1 = mapper.queryByIdAndModifier2(param);
+        Assertions.assertNull(user1);
+      }
+    });
+
+    PersistenceException zhangsan = Assertions.assertThrows(PersistenceException.class, () -> {
+      SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+        try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+          UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+          User param = new User();
+          param.setId(id.get());
+          User user1 = mapper.queryByIdAndModifier(param);
+          Assertions.assertNull(user1);
+        }
+      });
+    });
+
+    Assertions.assertThrows(BaseModelException.class, () -> {
+      throw zhangsan.getCause();
+    }, "Parameter [modifier] has existed and its corresponding value is [AdditionalParamAttr(name=modifier, columnName=@_camelCaseToSnackCase_@, expression=T(cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource).getUser(), jdbcType=VARCHAR, ifValue=true, ifInjected=true, value=null)]. Current Pojo is [User(super=SimpleBaseModel(creator=null, creatorName=null, createTime=null, modifier=null, modifierName=null, modifyTime=null), id=1, nickname=null, age=null, birthday=null, host=null)]. All additionalParamAttrList are [modifier].");
+
   }
 
 }

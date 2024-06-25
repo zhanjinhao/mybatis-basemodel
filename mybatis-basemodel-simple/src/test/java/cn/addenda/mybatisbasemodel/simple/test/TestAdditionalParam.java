@@ -1,4 +1,3 @@
-
 package cn.addenda.mybatisbasemodel.simple.test;
 
 import cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource;
@@ -69,6 +68,7 @@ class TestAdditionalParam {
       }
     });
 
+
     SimpleBaseModelSource.runWithUser("lisi", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
@@ -85,6 +85,24 @@ class TestAdditionalParam {
         Assertions.assertNotEquals(user.getCreateTime(), user.getModifyTime());
       }
     });
-  }
 
+
+    SimpleBaseModelSource.runWithUser("lisi", () -> {
+      try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        User user1 = mapper.queryByIdAndModifier(id.get());
+        Assertions.assertNotNull(user1);
+      }
+    });
+
+
+    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+      try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        User user1 = mapper.queryByIdAndModifier(id.get());
+        Assertions.assertNull(user1);
+      }
+    });
+
+  }
 }

@@ -199,5 +199,29 @@
     </trim>
     where `id` = #{id,jdbcType=INTEGER}
   </update>
+
+  <select id="queryByIdAndModifier" resultMap="UserMap">
+    select
+    <include refid="allColumn"/>
+    from `user`
+    <trim prefix="where" prefixOverrides="and">
+      `id` = #{id,jdbcType=INTEGER}
+    </trim>
+    <if test="modifier != null">
+      and `modifier` = #{modifier,jdbcType=VARCHAR}
+    </if>
+  </select>
+
+  <select id="queryByIdAndModifier2" resultMap="UserMap">
+    select
+    <include refid="allColumn"/>
+    from `user`
+    <trim prefix="where" prefixOverrides="and">
+      `id` = #{id,jdbcType=INTEGER}
+    </trim>
+    <if test="modifier2 != null">
+      and `modifier` = #{modifier2,jdbcType=VARCHAR}
+    </if>
+  </select>
 </mapper>
 

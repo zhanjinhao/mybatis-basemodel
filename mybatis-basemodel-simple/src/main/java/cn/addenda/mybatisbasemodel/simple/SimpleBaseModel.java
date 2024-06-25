@@ -9,6 +9,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 import java.io.IOException;
 import java.io.Serializable;
@@ -24,6 +25,7 @@ import java.util.Map;
  * @author addenda
  * @since 2022/8/16 20:40
  */
+@ToString
 @JsonIgnoreProperties({
         SimpleBaseModel.F_CREATOR, SimpleBaseModel.F_CREATOR_NAME, SimpleBaseModel.F_CREATE_TIME, SimpleBaseModel.F_MODIFIER,
         SimpleBaseModel.F_MODIFIER_NAME, SimpleBaseModel.F_MODIFY_TIME})
@@ -116,7 +118,6 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
   private LocalDateTime modifyTime;
 
   private static class LocalDateTimeStrDeSerializer extends JsonDeserializer<LocalDateTime> {
-
 
     @Override
     public LocalDateTime deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException {

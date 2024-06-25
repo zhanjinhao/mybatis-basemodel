@@ -5,6 +5,8 @@ import lombok.Setter;
 import lombok.ToString;
 import org.apache.ibatis.type.JdbcType;
 
+import java.util.function.BiFunction;
+
 @Setter
 @Getter
 @ToString
@@ -22,6 +24,16 @@ public class AdditionalParamAttr {
 
   private boolean ifValue;
 
-  // todo 支持配置是否自动注入
+  private boolean ifInjected;
+
+  private Object value;
+
+  public Object getOrEvaluate(Object param, BiFunction<String, Object, Object> function) {
+    if (value != null) {
+      return value;
+    }
+    this.value = function.apply(expression, param);
+    return value;
+  }
 
 }
