@@ -58,7 +58,7 @@ class TestBaseModelAdditionalParam {
           sqlSession.commit();
 
           id.set(param.getId());
-          User user = mapper.queryById(id.get());
+          UserWithHost user = mapper.queryById(id.get());
           Assertions.assertEquals("zhangsan", user.getCreator());
           Assertions.assertEquals("zhangsan", user.getCreatorName());
           Assertions.assertEquals("ip1", user.getHost());
@@ -82,7 +82,7 @@ class TestBaseModelAdditionalParam {
           mapper.updateById3(param);
           sqlSession.commit();
 
-          User user = mapper.queryById(id.get());
+          UserWithHost user = mapper.queryById(id.get());
           Assertions.assertEquals("zhangsan", user.getCreator());
           Assertions.assertEquals("zhangsan", user.getCreatorName());
           Assertions.assertEquals(3, user.getAge());

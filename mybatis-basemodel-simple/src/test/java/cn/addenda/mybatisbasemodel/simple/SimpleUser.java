@@ -32,7 +32,5 @@ public class SimpleUser implements Serializable {
    */
   private LocalDateTime birthday;
 
-  private String host;
-
 }
 

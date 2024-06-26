@@ -73,7 +73,7 @@ class TestPojoAdditionalParamBatch {
 
           id1.set(param1.getId());
           id2.set(param2.getId());
-          User user1 = mapper.queryById(id1.get());
+          UserWithHost user1 = mapper.queryById(id1.get());
           Assertions.assertEquals(2, user1.getAge());
           Assertions.assertEquals("a", user1.getNickname());
           Assertions.assertNotNull(user1.getBirthday());
@@ -84,7 +84,7 @@ class TestPojoAdditionalParamBatch {
           Assertions.assertNull(user1.getModifierName());
           Assertions.assertNull(user1.getCreateTime());
           Assertions.assertNull(user1.getModifyTime());
-          User user2 = mapper.queryById(id2.get());
+          UserWithHost user2 = mapper.queryById(id2.get());
           Assertions.assertEquals(2, user2.getAge());
           Assertions.assertEquals("a", user2.getNickname());
           Assertions.assertNotNull(user2.getBirthday());
@@ -118,7 +118,7 @@ class TestPojoAdditionalParamBatch {
             userMapper.updateById4(simpleUser);
           });
 
-          User user1 = mapper.queryById(id1.get());
+          UserWithHost user1 = mapper.queryById(id1.get());
           Assertions.assertEquals(3, user1.getAge());
           Assertions.assertEquals("a", user1.getNickname());
           Assertions.assertNotNull(user1.getBirthday());
@@ -130,7 +130,7 @@ class TestPojoAdditionalParamBatch {
           Assertions.assertNull(user1.getCreateTime());
           Assertions.assertNull(user1.getModifyTime());
 
-          User user2 = mapper.queryById(id2.get());
+          UserWithHost user2 = mapper.queryById(id2.get());
           Assertions.assertEquals(3, user2.getAge());
           Assertions.assertEquals("a", user2.getNickname());
           Assertions.assertNotNull(user2.getBirthday());

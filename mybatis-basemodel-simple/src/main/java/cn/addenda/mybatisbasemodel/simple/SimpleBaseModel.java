@@ -1,6 +1,8 @@
 package cn.addenda.mybatisbasemodel.simple;
 
 import cn.addenda.mybatisbasemodel.core.BaseModel;
+import cn.addenda.mybatisbasemodel.core.annotation.InsertField;
+import cn.addenda.mybatisbasemodel.core.annotation.UpdateField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -13,13 +15,7 @@ import lombok.ToString;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author addenda
@@ -45,73 +41,38 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
 
   public static final String F_MODIFY_TIME = "modifyTime";
 
-  private static final Map<String, Field> allFieldNameMap;
-  private static final List<String> allFieldNameList;
-  private static final List<String> updateFieldNameList;
-
-  static {
-    allFieldNameMap = new HashMap<>();
-    allFieldNameList = new ArrayList<>();
-    Field[] declaredFields = SimpleBaseModel.class.getDeclaredFields();
-    for (Field field : declaredFields) {
-      if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers())) {
-        continue;
-      }
-      allFieldNameMap.put(field.getName(), field);
-      allFieldNameList.add(field.getName());
-    }
-
-    updateFieldNameList = new ArrayList<>();
-    for (Field field : declaredFields) {
-      if (Modifier.isFinal(field.getModifiers()) || Modifier.isStatic(field.getModifiers())
-              || !field.isAnnotationPresent(UpdateField.class)) {
-        continue;
-      }
-      updateFieldNameList.add(field.getName());
-    }
-  }
-
-  @Override
-  public List<String> getAllFieldNameList() {
-    return allFieldNameList;
-  }
-
-  @Override
-  public List<String> getUpdateFieldNameList() {
-    return updateFieldNameList;
-  }
-
-  @Override
-  public Field getFieldByFieldName(String fieldName) {
-    return allFieldNameMap.get(fieldName);
-  }
-
   @Getter
   @Setter
+  @InsertField
   private String creator;
 
   @Setter
   @Getter
+  @InsertField
   private String creatorName;
 
   @Getter
   @Setter
+  @InsertField
   @JsonSerialize(using = LocalDateTimeStrSerializer.class)
   @JsonDeserialize(using = LocalDateTimeStrDeSerializer.class)
   private LocalDateTime createTime;
 
   @Getter
   @Setter
+  @InsertField
   @UpdateField
   private String modifier;
 
   @Getter
   @Setter
+  @InsertField
   @UpdateField
   private String modifierName;
 
   @Getter
   @Setter
+  @InsertField
   @UpdateField
   @JsonSerialize(using = LocalDateTimeStrSerializer.class)
   @JsonDeserialize(using = LocalDateTimeStrDeSerializer.class)

@@ -105,7 +105,7 @@
     </trim>
   </select>
 
-  <select id="queryById" resultMap="UserMap">
+  <select id="queryById" resultType="cn.addenda.mybatisbasemodel.simple.test.UserWithHost">
     select
     <include refid="allColumn"/>
     from `user`

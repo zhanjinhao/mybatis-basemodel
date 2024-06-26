@@ -3,7 +3,6 @@ package cn.addenda.mybatisbasemodel.core.annotation;
 import cn.addenda.mybatisbasemodel.core.AdditionalParamAttr;
 import cn.addenda.mybatisbasemodel.core.BaseModelELEvaluator;
 import cn.addenda.mybatisbasemodel.core.util.JSqlParserUtils;
-import jdk.nashorn.internal.objects.annotations.Setter;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.type.JdbcType;
 
@@ -42,7 +41,6 @@ public @interface AdditionalParam {
 
   /**
    * 注入的参数的类型
-   * airport4Code airport4_code airport_4code
    */
   JdbcType jdbcType();
 

@@ -1,4 +1,4 @@
-package cn.addenda.mybatisbasemodel.simple;
+package cn.addenda.mybatisbasemodel.core.annotation;
 
 import java.lang.annotation.*;
 

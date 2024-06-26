@@ -1,6 +1,7 @@
 package cn.addenda.mybatisbasemodel.simple;
 
 import cn.addenda.mybatisbasemodel.core.annotation.AdditionalParam;
+import cn.addenda.mybatisbasemodel.simple.test.UserWithHost;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.type.JdbcType;
 
@@ -56,7 +57,7 @@ public interface UserMapper {
   /**
    * 按ID查询数据
    */
-  User queryById(@Param("id") Long id);
+  UserWithHost queryById(@Param("id") Long id);
 
   /**
    * 按ID集合查询数据

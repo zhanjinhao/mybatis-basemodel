@@ -71,7 +71,7 @@ class TestBaseModelAdditionalParamBatch {
 
           id1.set(param1.getId());
           id2.set(param2.getId());
-          User user1 = mapper.queryById(id1.get());
+          UserWithHost user1 = mapper.queryById(id1.get());
           Assertions.assertEquals("zhangsan", user1.getCreator());
           Assertions.assertEquals("zhangsan", user1.getCreatorName());
           Assertions.assertEquals("ip1", user1.getHost());
@@ -79,7 +79,7 @@ class TestBaseModelAdditionalParamBatch {
           Assertions.assertEquals("zhangsan", user1.getModifierName());
           Assertions.assertNotNull(user1.getCreateTime());
           Assertions.assertNotNull(user1.getModifyTime());
-          User user2 = mapper.queryById(id2.get());
+          UserWithHost user2 = mapper.queryById(id2.get());
           Assertions.assertEquals("zhangsan", user2.getCreator());
           Assertions.assertEquals("zhangsan", user2.getCreatorName());
           Assertions.assertEquals("ip1", user2.getHost());
@@ -110,7 +110,7 @@ class TestBaseModelAdditionalParamBatch {
             userMapper.updateById3(user);
           });
 
-          User user1 = mapper.queryById(id1.get());
+          UserWithHost user1 = mapper.queryById(id1.get());
           Assertions.assertEquals("zhangsan", user1.getCreator());
           Assertions.assertEquals("zhangsan", user1.getCreatorName());
           Assertions.assertEquals(3, user1.getAge());
@@ -118,7 +118,7 @@ class TestBaseModelAdditionalParamBatch {
           Assertions.assertEquals("lisi", user1.getModifier());
           Assertions.assertEquals("lisi", user1.getModifierName());
           Assertions.assertNotEquals(user1.getCreateTime(), user1.getModifyTime());
-          User user2 = mapper.queryById(id2.get());
+          UserWithHost user2 = mapper.queryById(id2.get());
           Assertions.assertEquals("zhangsan", user2.getCreator());
           Assertions.assertEquals("zhangsan", user2.getCreatorName());
           Assertions.assertEquals(3, user2.getAge());

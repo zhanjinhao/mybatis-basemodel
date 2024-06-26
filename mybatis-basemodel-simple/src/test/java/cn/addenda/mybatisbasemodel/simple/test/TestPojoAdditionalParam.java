@@ -59,7 +59,7 @@ class TestPojoAdditionalParam {
           sqlSession.commit();
 
           id.set(param.getId());
-          User user = mapper.queryById(id.get());
+          UserWithHost user = mapper.queryById(id.get());
           Assertions.assertEquals(2, user.getAge());
           Assertions.assertEquals("a", user.getNickname());
           Assertions.assertNotNull(user.getBirthday());
@@ -88,7 +88,7 @@ class TestPojoAdditionalParam {
           mapper.updateById4(param);
           sqlSession.commit();
 
-          User user = mapper.queryById(id.get());
+          UserWithHost user = mapper.queryById(id.get());
           Assertions.assertEquals(3, user.getAge());
           Assertions.assertEquals("a", user.getNickname());
           Assertions.assertNotNull(user.getBirthday());

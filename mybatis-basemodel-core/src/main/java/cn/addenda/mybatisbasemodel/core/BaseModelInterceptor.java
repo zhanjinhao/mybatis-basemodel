@@ -3,10 +3,7 @@ package cn.addenda.mybatisbasemodel.core;
 import cn.addenda.mybatisbasemodel.core.annotation.AdditionalParam;
 import cn.addenda.mybatisbasemodel.core.annotation.BaseModelColumnName;
 import cn.addenda.mybatisbasemodel.core.annotation.BaseModelJdbcType;
-import cn.addenda.mybatisbasemodel.core.util.InstanceUtils;
-import cn.addenda.mybatisbasemodel.core.util.JSqlParserUtils;
-import cn.addenda.mybatisbasemodel.core.util.PluginUtils;
-import cn.addenda.mybatisbasemodel.core.util.ProxyUtils;
+import cn.addenda.mybatisbasemodel.core.util.*;
 import cn.addenda.mybatisbasemodel.core.wrapper.AdditionalParamWrapper;
 import cn.addenda.mybatisbasemodel.core.wrapper.BaseModelAdditionalParamWrapper;
 import cn.addenda.mybatisbasemodel.core.wrapper.PojoAdditionalParamWrapper;
@@ -276,7 +273,7 @@ public class BaseModelInterceptor implements Interceptor {
     BoundSql boundSql = statementHandler.getBoundSql();
     Insert insert = parseAndGetStatement(statementHandler, Insert.class);
 
-    String newSql = doRewriteSql(mappedStatement, baseModel.getAllFieldNameList(), baseModel, JSqlParserUtils.wrap(insert));
+    String newSql = doRewriteSql(mappedStatement, BaseModelMetaDataUtils.getAllFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(insert));
     replaceSql(statementHandlerMetaObject, boundSql, mappedStatement, newSql);
   }
 
@@ -285,7 +282,7 @@ public class BaseModelInterceptor implements Interceptor {
     BoundSql boundSql = statementHandler.getBoundSql();
     Update update = parseAndGetStatement(statementHandler, Update.class);
 
-    String newSql = doRewriteSql(mappedStatement, baseModel.getUpdateFieldNameList(), baseModel, JSqlParserUtils.wrap(update));
+    String newSql = doRewriteSql(mappedStatement, BaseModelMetaDataUtils.getUpdateFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(update));
     replaceSql(statementHandlerMetaObject, boundSql, mappedStatement, newSql);
   }
 
@@ -295,7 +292,7 @@ public class BaseModelInterceptor implements Interceptor {
     List<String> columnNameList = formatColumnName(columnList);
 
     for (String fieldName : injectedFieldNameList) {
-      Field field = baseModel.getFieldByFieldName(fieldName);
+      Field field = BaseModelMetaDataUtils.getFieldByFieldName(baseModel, fieldName);
       String columnName = calculateColumnName(field, columnNameList);
       if (columnName == null) {
         continue;
@@ -322,7 +319,7 @@ public class BaseModelInterceptor implements Interceptor {
     StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
     Insert insert = parseAndGetStatement2(statementHandler, Insert.class);
 
-    List<ParameterMapping> injectedParameterMappings = generateParameterMapping(mappedStatement, baseModel.getAllFieldNameList(), baseModel, JSqlParserUtils.wrap(insert));
+    List<ParameterMapping> injectedParameterMappings = generateParameterMapping(mappedStatement, BaseModelMetaDataUtils.getAllFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(insert));
     replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappings, 0);
   }
 
@@ -330,7 +327,7 @@ public class BaseModelInterceptor implements Interceptor {
     StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
     Update update = parseAndGetStatement2(statementHandler, Update.class);
 
-    List<ParameterMapping> injectedParameterMappings = generateParameterMapping(mappedStatement, baseModel.getUpdateFieldNameList(), baseModel, JSqlParserUtils.wrap(update));
+    List<ParameterMapping> injectedParameterMappings = generateParameterMapping(mappedStatement, BaseModelMetaDataUtils.getUpdateFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(update));
     replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappings, countOccurrencesOf(update.getWhere().toString(), "?"));
   }
 
@@ -342,7 +339,7 @@ public class BaseModelInterceptor implements Interceptor {
 
     List<ParameterMapping> parameterMappingList = new ArrayList<>();
     for (String fieldName : injectedFieldNameList) {
-      Field field = baseModel.getFieldByFieldName(fieldName);
+      Field field = BaseModelMetaDataUtils.getFieldByFieldName(baseModel, fieldName);
       String columnName = calculateColumnName(field, columnNameList);
       if (columnName == null) {
         continue;
@@ -714,7 +711,7 @@ public class BaseModelInterceptor implements Interceptor {
   }
 
   private void fillInsert(BaseModel baseModel, Configuration configuration) {
-    List<String> allFieldNameList = baseModel.getAllFieldNameList();
+    List<String> allFieldNameList = BaseModelMetaDataUtils.getAllFieldNameList(baseModel);
     MetaObject metaObject = configuration.newMetaObject(baseModel);
     for (String fieldName : allFieldNameList) {
       if (baseModelSource.ifValue(fieldName)) {
@@ -724,7 +721,7 @@ public class BaseModelInterceptor implements Interceptor {
   }
 
   private void fillUpdate(BaseModel baseModel, Configuration configuration) {
-    List<String> updateFieldNameList = baseModel.getUpdateFieldNameList();
+    List<String> updateFieldNameList = BaseModelMetaDataUtils.getUpdateFieldNameList(baseModel);
     MetaObject metaObject = configuration.newMetaObject(baseModel);
     for (String fieldName : updateFieldNameList) {
       if (baseModelSource.ifValue(fieldName)) {

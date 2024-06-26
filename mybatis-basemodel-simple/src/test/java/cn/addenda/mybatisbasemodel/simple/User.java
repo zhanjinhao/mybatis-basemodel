@@ -32,7 +32,5 @@ public class User extends SimpleBaseModel implements Serializable {
    */
   private LocalDateTime birthday;
 
-  private String host;
-
 }
 
