@@ -118,7 +118,7 @@ class TestBaseModel {
           UserMapper mapper = sqlSession.getMapper(UserMapper.class);
           User param = new User();
           param.setId(id.get());
-          User user1 = mapper.queryByIdAndModifier(param);
+          User user1 = mapper.queryByIdAndModifier3(param);
           Assertions.assertNull(user1);
         }
       });
@@ -126,7 +126,7 @@ class TestBaseModel {
 
     Assertions.assertThrows(BaseModelException.class, () -> {
       throw zhangsan.getCause();
-    }, "Parameter [modifier] has existed and its corresponding value is [AdditionalParamAttr(name=modifier, columnName=@_camelCaseToSnackCase_@, expression=T(cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource).getUser(), jdbcType=VARCHAR, ifValue=true, ifInjected=true, value=null)]. Current Pojo is [User(super=SimpleBaseModel(creator=null, creatorName=null, createTime=null, modifier=null, modifierName=null, modifyTime=null), id=1, nickname=null, age=null, birthday=null, host=null)]. All additionalParamAttrList are [modifier].");
+    });
 
   }
 

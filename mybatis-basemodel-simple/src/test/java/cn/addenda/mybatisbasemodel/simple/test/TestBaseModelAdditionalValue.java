@@ -16,7 +16,7 @@ import java.io.Reader;
 import java.time.LocalDateTime;
 import java.util.concurrent.atomic.AtomicReference;
 
-class TestBaseModelAdditionalParam {
+class TestBaseModelAdditionalValue {
 
   static SqlSessionFactory sqlSessionFactory;
 

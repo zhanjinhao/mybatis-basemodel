@@ -1,6 +1,6 @@
 package cn.addenda.mybatisbasemodel.core.wrapper;
 
-import cn.addenda.mybatisbasemodel.core.AdditionalParamAttr;
+import cn.addenda.mybatisbasemodel.core.AdditionAttr;
 import cn.addenda.mybatisbasemodel.core.BaseModelELEvaluator;
 import cn.addenda.mybatisbasemodel.core.BaseModelException;
 import org.apache.ibatis.reflection.MetaObject;
@@ -9,13 +9,13 @@ import org.apache.ibatis.reflection.SystemMetaObject;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class PojoAdditionalParamWrapper<O> extends AdditionalParamWrapper<O> {
+public class PojoAdditionWrapper<O> extends AdditionWrapper<O> {
 
   private final MetaObject metaObject;
 
-  public PojoAdditionalParamWrapper(BaseModelELEvaluator baseModelELEvaluator,
-                                    O object, List<AdditionalParamAttr> additionalParamAttrList) {
-    super(baseModelELEvaluator, object, additionalParamAttrList);
+  public PojoAdditionWrapper(BaseModelELEvaluator baseModelELEvaluator,
+                             O object, List<AdditionAttr> additionAttrList) {
+    super(baseModelELEvaluator, object, additionAttrList);
     this.metaObject = SystemMetaObject.forObject(object);
   }
 
@@ -29,12 +29,12 @@ public class PojoAdditionalParamWrapper<O> extends AdditionalParamWrapper<O> {
                         key, super.get(key), originalParam, keySet()));
       }
     }
-    for (AdditionalParamAttr additionalParamAttr : additionalParamAttrList) {
-      String name = additionalParamAttr.getName();
+    for (AdditionAttr additionAttr : additionAttrList) {
+      String name = additionAttr.getName();
       if (metaObject.hasSetter(name)) {
         throw new BaseModelException(
-                String.format("Parameter [%s] has existed and its corresponding value is [%s]. Current Pojo is [%s]. All additionalParamAttrList are %s.",
-                        name, additionalParamAttr, originalParam, additionalParamAttrList.stream().map(AdditionalParamAttr::getName).collect(Collectors.toList())));
+                String.format("Parameter [%s] has existed and its corresponding value is [%s]. Current Pojo is [%s]. All additionAttrList are %s.",
+                        name, additionAttr, originalParam, additionAttrList.stream().map(AdditionAttr::getName).collect(Collectors.toList())));
       }
     }
   }

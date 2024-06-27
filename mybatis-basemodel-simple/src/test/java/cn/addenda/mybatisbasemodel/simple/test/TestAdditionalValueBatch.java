@@ -18,9 +18,8 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
 
-class TestAdditionalParamBatch {
+class TestAdditionalValueBatch {
 
   static SqlSessionFactory sqlSessionFactory;
   static BatchDmlHelper batchDmlHelper;

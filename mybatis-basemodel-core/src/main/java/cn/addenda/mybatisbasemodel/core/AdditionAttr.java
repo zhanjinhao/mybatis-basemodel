@@ -10,7 +10,7 @@ import java.util.function.BiFunction;
 @Setter
 @Getter
 @ToString
-public class AdditionalParamAttr {
+public class AdditionAttr {
 
   public static final String BASE_MODEL_COLUMN = "@_camelCaseToSnackCase_@";
 

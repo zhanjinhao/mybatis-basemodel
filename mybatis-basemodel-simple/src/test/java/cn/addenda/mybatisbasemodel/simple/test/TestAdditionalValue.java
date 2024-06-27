@@ -16,7 +16,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-class TestAdditionalParam {
+class TestAdditionalValue {
 
   static SqlSessionFactory sqlSessionFactory;
 

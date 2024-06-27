@@ -78,24 +78,6 @@
     where `id` = #{id,jdbcType=INTEGER}
   </update>
 
-  <delete id="deleteById">
-    delete from `user` where `id` = #{id,jdbcType=INTEGER}
-  </delete>
-
-  <delete id="deleteByEntity">
-    delete from `user`
-    <trim prefix="where" prefixOverrides="and">
-      <include refid="queryCondition"/>
-    </trim>
-  </delete>
-
-  <delete id="deleteByEntity2">
-    delete from `user`
-    <trim prefix="where" prefixOverrides="and">
-      <include refid="queryCondition"/>
-    </trim>
-  </delete>
-
   <select id="queryByEntity" resultMap="UserMap">
     select
     <include refid="allColumn"/>
@@ -113,47 +95,6 @@
       `id` = #{id,jdbcType=INTEGER}
     </trim>
   </select>
-
-  <select id="queryByIdList" resultMap="UserMap">
-    select
-    <include refid="allColumn"/>
-    from `user`
-    <trim prefix="where" prefixOverrides="and">
-      `id` in
-      <foreach collection="idList" open="(" close=")" item="id" separator=",">
-        #{id,jdbcType=INTEGER}
-      </foreach>
-    </trim>
-  </select>
-
-  <select id="countByEntity" resultType="java.lang.Long">
-    select count(*) from `user`
-    <trim prefix="where" prefixOverrides="and">
-      <include refid="queryCondition"/>
-    </trim>
-  </select>
-
-  <update id="update">
-    update `user`
-    set
-    `nickname` = #{nickName,jdbcType=VARCHAR},
-    `modify_tm` = now(),
-    `modifier` = #{modifier,jdbcType=VARCHAR},
-    `modifier_name` = #{modifierName,jdbcType=VARCHAR}
-    where
-    `id` = #{id,jdbcType=BIGINT}
-  </update>
-
-  <update id="increment">
-    update `user`
-    set
-    `age` = `age` + 1,
-    `modify_tm` = now(),
-    `modifier` = #{modifier,jdbcType=VARCHAR},
-    `modifier_name` = #{modifierName,jdbcType=VARCHAR}
-    where
-    `nickname` = #{nickName,jdbcType=VARCHAR}
-  </update>
 
   <insert id="insert2">
     insert into `user`
@@ -213,6 +154,18 @@
   </select>
 
   <select id="queryByIdAndModifier2" resultMap="UserMap">
+    select
+    <include refid="allColumn"/>
+    from `user`
+    <trim prefix="where" prefixOverrides="and">
+      `id` = #{id,jdbcType=INTEGER}
+    </trim>
+    <if test="modifier2 != null">
+      and `modifier` = #{modifier2,jdbcType=VARCHAR}
+    </if>
+  </select>
+
+  <select id="queryByIdAndModifier3" resultMap="UserMap">
     select
     <include refid="allColumn"/>
     from `user`

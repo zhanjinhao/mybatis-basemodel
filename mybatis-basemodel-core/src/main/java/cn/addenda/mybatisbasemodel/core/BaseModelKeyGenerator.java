@@ -1,6 +1,6 @@
 package cn.addenda.mybatisbasemodel.core;
 
-import cn.addenda.mybatisbasemodel.core.wrapper.AdditionalParamWrapper;
+import cn.addenda.mybatisbasemodel.core.wrapper.AdditionWrapper;
 import lombok.SneakyThrows;
 import org.apache.ibatis.executor.ExecutorException;
 import org.apache.ibatis.executor.keygen.Jdbc3KeyGenerator;
@@ -26,8 +26,8 @@ public class BaseModelKeyGenerator extends Jdbc3KeyGenerator {
       if (rsmd.getColumnCount() < keyProperties.length) {
         // Error?
       } else {
-        if (parameter instanceof AdditionalParamWrapper) {
-          parameter = ((AdditionalParamWrapper<?>) parameter).getOriginalParam();
+        if (parameter instanceof AdditionWrapper) {
+          parameter = ((AdditionWrapper<?>) parameter).getOriginalParam();
         }
         invokeAssignKeys(configuration, rs, rsmd, keyProperties, parameter);
       }

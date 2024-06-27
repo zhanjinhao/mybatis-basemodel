@@ -1,12 +1,13 @@
 package cn.addenda.mybatisbasemodel.core;
 
 import cn.addenda.mybatisbasemodel.core.annotation.AdditionalParam;
+import cn.addenda.mybatisbasemodel.core.annotation.AdditionalValue;
 import cn.addenda.mybatisbasemodel.core.annotation.BaseModelColumnName;
 import cn.addenda.mybatisbasemodel.core.annotation.BaseModelJdbcType;
 import cn.addenda.mybatisbasemodel.core.util.*;
-import cn.addenda.mybatisbasemodel.core.wrapper.AdditionalParamWrapper;
-import cn.addenda.mybatisbasemodel.core.wrapper.BaseModelAdditionalParamWrapper;
-import cn.addenda.mybatisbasemodel.core.wrapper.PojoAdditionalParamWrapper;
+import cn.addenda.mybatisbasemodel.core.wrapper.AdditionWrapper;
+import cn.addenda.mybatisbasemodel.core.wrapper.BaseModelAdditionWrapper;
+import cn.addenda.mybatisbasemodel.core.wrapper.PojoAdditionWrapper;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
@@ -38,6 +39,7 @@ import org.apache.ibatis.session.defaults.DefaultSqlSession;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
@@ -110,16 +112,16 @@ public class BaseModelInterceptor implements Interceptor {
         if (parameterObject instanceof BaseModel) {
           rewriteInsertSql(statementHandlerMetaObject, mappedStatement, (BaseModel) parameterObject);
         }
-        if (parameterObject instanceof AdditionalParamWrapper) {
-          rewriteInsertSql(statementHandlerMetaObject, mappedStatement, (AdditionalParamWrapper<?>) parameterObject);
+        if (parameterObject instanceof AdditionWrapper) {
+          rewriteInsertSql(statementHandlerMetaObject, mappedStatement, (AdditionWrapper<?>) parameterObject);
         }
       } else if (sqlCommandType == SqlCommandType.UPDATE) {
         Object parameterObject = boundSql.getParameterObject();
         if (parameterObject instanceof BaseModel) {
           rewriteUpdateSql(statementHandlerMetaObject, mappedStatement, (BaseModel) parameterObject);
         }
-        if (parameterObject instanceof AdditionalParamWrapper) {
-          rewriteUpdateSql(statementHandlerMetaObject, mappedStatement, (AdditionalParamWrapper<?>) parameterObject);
+        if (parameterObject instanceof AdditionWrapper) {
+          rewriteUpdateSql(statementHandlerMetaObject, mappedStatement, (AdditionWrapper<?>) parameterObject);
         }
       }
     } else if ("parameterize".equals(method.getName())) {
@@ -128,16 +130,16 @@ public class BaseModelInterceptor implements Interceptor {
         if (parameterObject instanceof BaseModel) {
           injectInsertSql(statementHandlerMetaObject, mappedStatement, (BaseModel) parameterObject);
         }
-        if (parameterObject instanceof AdditionalParamWrapper) {
-          injectInsertSql(statementHandlerMetaObject, mappedStatement, (AdditionalParamWrapper<?>) parameterObject);
+        if (parameterObject instanceof AdditionWrapper) {
+          injectInsertSql(statementHandlerMetaObject, mappedStatement, (AdditionWrapper<?>) parameterObject);
         }
       } else if (sqlCommandType == SqlCommandType.UPDATE) {
         Object parameterObject = boundSql.getParameterObject();
         if (parameterObject instanceof BaseModel) {
           injectUpdateSql(statementHandlerMetaObject, mappedStatement, (BaseModel) parameterObject);
         }
-        if (parameterObject instanceof AdditionalParamWrapper) {
-          injectUpdateSql(statementHandlerMetaObject, mappedStatement, (AdditionalParamWrapper<?>) parameterObject);
+        if (parameterObject instanceof AdditionWrapper) {
+          injectUpdateSql(statementHandlerMetaObject, mappedStatement, (AdditionWrapper<?>) parameterObject);
         }
       }
     } else {
@@ -146,43 +148,43 @@ public class BaseModelInterceptor implements Interceptor {
     return invocation.proceed();
   }
 
-  private void rewriteInsertSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, AdditionalParamWrapper<?> additionalParamWrapper) {
+  private void rewriteInsertSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, AdditionWrapper<?> additionWrapper) {
     StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
     BoundSql boundSql = statementHandler.getBoundSql();
     Insert insert = parseAndGetStatement(statementHandler, Insert.class);
 
-    String newSql = doRewriteSql(mappedStatement, additionalParamWrapper, JSqlParserUtils.wrap(insert));
+    String newSql = doRewriteSql(mappedStatement, additionWrapper, JSqlParserUtils.wrap(insert));
     replaceSql(statementHandlerMetaObject, boundSql, mappedStatement, newSql);
   }
 
-  private void rewriteUpdateSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, AdditionalParamWrapper<?> additionalParamWrapper) {
+  private void rewriteUpdateSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, AdditionWrapper<?> additionWrapper) {
     StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
     BoundSql boundSql = statementHandler.getBoundSql();
     Update update = parseAndGetStatement(statementHandler, Update.class);
 
-    String newSql = doRewriteSql(mappedStatement, additionalParamWrapper, JSqlParserUtils.wrap(update));
+    String newSql = doRewriteSql(mappedStatement, additionWrapper, JSqlParserUtils.wrap(update));
     replaceSql(statementHandlerMetaObject, boundSql, mappedStatement, newSql);
   }
 
-  private String doRewriteSql(MappedStatement mappedStatement, AdditionalParamWrapper<?> additionalParamWrapper,
+  private String doRewriteSql(MappedStatement mappedStatement, AdditionWrapper<?> additionWrapper,
                               JSqlParserStatementWrapper jSqlParserStatementWrapper) {
     List<Column> columnList = jSqlParserStatementWrapper.getColumnList();
-    Map<String, AdditionalParamAttr> additionalParamMap = additionalParamWrapper.getInjectedAdditionalParamAttrMap();
+    Map<String, AdditionAttr> additionMap = additionWrapper.getInjectedAdditionAttrMap();
     List<String> columnNameList = formatColumnName(columnList);
-    for (Map.Entry<String, AdditionalParamAttr> entry : additionalParamMap.entrySet()) {
-      AdditionalParamAttr additionalParamAttr = entry.getValue();
-      String columnName = calculateColumnName(additionalParamAttr, columnNameList);
+    for (Map.Entry<String, AdditionAttr> entry : additionMap.entrySet()) {
+      AdditionAttr additionAttr = entry.getValue();
+      String columnName = calculateColumnName(additionAttr, columnNameList);
       if (columnName == null) {
         continue;
       }
 
-      if (!additionalParamAttr.isIfValue()) {
+      if (!additionAttr.isIfValue()) {
         // todo 需不需要解析一下？Object evaluate = baseModelELEvaluator.evaluate(additionalParamAttr.el(), additionalParamAttr);
-        Expression expression = JSqlParserUtils.parseExpression(additionalParamAttr.getExpression());
+        Expression expression = JSqlParserUtils.parseExpression(additionAttr.getExpression());
         if (expression == null) {
           throw new UnsupportedOperationException(
                   String.format("mappedStatement [%s], can not parse expression from [%s], current name is [%s].",
-                          mappedStatement.getId(), additionalParamAttr.getExpression(), additionalParamAttr.getName()));
+                          mappedStatement.getId(), additionAttr.getExpression(), additionAttr.getName()));
         }
         jSqlParserStatementWrapper.addColumn(new Column(columnName), expression);
       } else {
@@ -193,19 +195,19 @@ public class BaseModelInterceptor implements Interceptor {
     return jSqlParserStatementWrapper.toString();
   }
 
-  private void injectInsertSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, AdditionalParamWrapper<?> additionalParamWrapper) {
+  private void injectInsertSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, AdditionWrapper<?> additionWrapper) {
     StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
     Insert insert = parseAndGetStatement2(statementHandler, Insert.class);
 
-    List<ParameterMapping> injectedParameterMappingList = generateParameterMapping(mappedStatement, additionalParamWrapper, JSqlParserUtils.wrap(insert));
+    List<ParameterMapping> injectedParameterMappingList = generateParameterMapping(mappedStatement, additionWrapper, JSqlParserUtils.wrap(insert));
     replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappingList, 0);
   }
 
-  private void injectUpdateSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, AdditionalParamWrapper<?> additionalParamWrapper) {
+  private void injectUpdateSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, AdditionWrapper<?> additionWrapper) {
     StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
     Update update = parseAndGetStatement2(statementHandler, Update.class);
 
-    List<ParameterMapping> injectedParameterMappingList = generateParameterMapping(mappedStatement, additionalParamWrapper, JSqlParserUtils.wrap(update));
+    List<ParameterMapping> injectedParameterMappingList = generateParameterMapping(mappedStatement, additionWrapper, JSqlParserUtils.wrap(update));
     replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappingList, countOccurrencesOf(update.getWhere().toString(), "?"));
   }
 
@@ -245,23 +247,23 @@ public class BaseModelInterceptor implements Interceptor {
     }
   }
 
-  private List<ParameterMapping> generateParameterMapping(MappedStatement mappedStatement, AdditionalParamWrapper<?> additionalParamWrapper,
+  private List<ParameterMapping> generateParameterMapping(MappedStatement mappedStatement, AdditionWrapper<?> additionWrapper,
                                                           JSqlParserStatementWrapper jSqlParserStatementWrapper) {
     Configuration configuration = mappedStatement.getConfiguration();
 
     List<Column> columnList = jSqlParserStatementWrapper.getColumnList();
-    Map<String, AdditionalParamAttr> additionalParamMap = additionalParamWrapper.getInjectedAdditionalParamAttrMap();
+    Map<String, AdditionAttr> additionMap = additionWrapper.getInjectedAdditionAttrMap();
     List<String> columnNameList = formatColumnName(columnList);
     List<ParameterMapping> parameterMappingList = new ArrayList<>();
-    for (Map.Entry<String, AdditionalParamAttr> entry : additionalParamMap.entrySet()) {
-      AdditionalParamAttr additionalParamAttr = entry.getValue();
-      String columnName = calculateColumnName(additionalParamAttr, columnNameList);
+    for (Map.Entry<String, AdditionAttr> entry : additionMap.entrySet()) {
+      AdditionAttr additionAttr = entry.getValue();
+      String columnName = calculateColumnName(additionAttr, columnNameList);
       if (columnName == null) {
         continue;
       }
 
-      if (additionalParamAttr.isIfValue()) {
-        ParameterMapping parameterMapping = buildParameterMapping(additionalParamAttr.getJdbcType(), additionalParamAttr.getName(), configuration);
+      if (additionAttr.isIfValue()) {
+        ParameterMapping parameterMapping = buildParameterMapping(additionAttr.getJdbcType(), additionAttr.getName(), configuration);
         parameterMappingList.add(parameterMapping);
       }
     }
@@ -415,11 +417,11 @@ public class BaseModelInterceptor implements Interceptor {
     return columnName;
   }
 
-  private String calculateColumnName(AdditionalParamAttr additionalParamAttr, List<String> columnNameList) {
-    String fieldName = additionalParamAttr.getName();
+  private String calculateColumnName(AdditionAttr additionAttr, List<String> columnNameList) {
+    String fieldName = additionAttr.getName();
 
-    String columnName = additionalParamAttr.getColumnName();
-    if (AdditionalParamAttr.BASE_MODEL_COLUMN.equals(columnName)) {
+    String columnName = additionAttr.getColumnName();
+    if (AdditionAttr.BASE_MODEL_COLUMN.equals(columnName)) {
       columnName = camelCaseToSnakeCase(fieldName);
     }
     // 属性去重，对于用户已经添加的字段，不能再自动注入
@@ -464,30 +466,30 @@ public class BaseModelInterceptor implements Interceptor {
       }
     }
 
-    if (!(parameterObject instanceof AdditionalParamWrapper)) {
+    if (!(parameterObject instanceof AdditionWrapper)) {
       return invocation.proceed();
     }
 
     BoundSql boundSql = (BoundSql) metaObject.getValue("boundSql");
 
-    AdditionalParamWrapper<?> additionalParamWrapper = (AdditionalParamWrapper<?>) parameterObject;
-    List<AdditionalParamAttr> additionalParamAttrList = additionalParamWrapper.getInjectedAdditionalParamAttrList();
+    AdditionWrapper<?> additionWrapper = (AdditionWrapper<?>) parameterObject;
+    List<AdditionAttr> additionAttrList = additionWrapper.getInjectedAdditionAttrList();
     try {
-      for (AdditionalParamAttr additionalParamAttr : additionalParamAttrList) {
-        if (additionalParamAttr.isIfValue()) {
-          boundSql.setAdditionalParameter(additionalParamAttr.getName(),
-                  additionalParamAttr.getOrEvaluate(additionalParamWrapper.getOriginalParam(), baseModelELEvaluator::evaluate));
+      for (AdditionAttr additionAttr : additionAttrList) {
+        if (additionAttr.isIfValue()) {
+          boundSql.setAdditionalParameter(additionAttr.getName(),
+                  additionAttr.getOrEvaluate(additionWrapper.getOriginalParam(), baseModelELEvaluator::evaluate));
         }
       }
-      boundSql.setAdditionalParameter(AdditionalParamWrapper.ORIGINAL_PARAM_NAME, additionalParamWrapper.getOriginalParam());
+      boundSql.setAdditionalParameter(AdditionWrapper.ORIGINAL_PARAM_NAME, additionWrapper.getOriginalParam());
       return invocation.proceed();
     } finally {
-      for (AdditionalParamAttr additionalParamAttr : additionalParamAttrList) {
-        if (additionalParamAttr.isIfValue()) {
-          boundSql.getAdditionalParameters().remove(additionalParamAttr.getName());
+      for (AdditionAttr additionAttr : additionAttrList) {
+        if (additionAttr.isIfValue()) {
+          boundSql.getAdditionalParameters().remove(additionAttr.getName());
         }
       }
-      boundSql.getAdditionalParameters().remove(AdditionalParamWrapper.ORIGINAL_PARAM_NAME);
+      boundSql.getAdditionalParameters().remove(AdditionWrapper.ORIGINAL_PARAM_NAME);
     }
   }
 
@@ -496,30 +498,29 @@ public class BaseModelInterceptor implements Interceptor {
     MappedStatement mappedStatement = (MappedStatement) args[0];
     String msId = mappedStatement.getId();
 
+    AdditionalValue[] additionalValues = extractAdditionalValue(msId);
     AdditionalParam[] additionalParams = extractAdditionalParam(msId);
-    if (additionalParams != null && additionalParams.length != 0) {
+    List<AdditionAttr> additionAttrList = mergeAddition(additionalParams, additionalValues);
+    if (!additionAttrList.isEmpty()) {
       // 观察org.apache.ibatis.reflection.ParamNameResolver.getNamedParams的实现可知，返回值一共有三种类型
       // - 没有参数时返回null
       // - 有一个参数且没有@Param注解时返回参数本身
       // - 返回MapperMethod.ParamMap
       Object arg = args[1];
       if (arg == null) {
-        AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(baseModelELEvaluator,
-                null, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
+        AdditionWrapper<?> paramWrapper = new AdditionWrapper<>(baseModelELEvaluator, null, additionAttrList);
         paramWrapper.init();
         args[1] = paramWrapper;
       } else {
         if (arg instanceof MapperMethod.ParamMap) {
-          AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(baseModelELEvaluator,
-                  arg, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
+          AdditionWrapper<?> paramWrapper = new AdditionWrapper<>(baseModelELEvaluator, arg, additionAttrList);
           paramWrapper.putAll((MapperMethod.ParamMap<?>) arg);
           paramWrapper.init();
           args[1] = paramWrapper;
         }
         // StrictMap在3.5.5之前是 org.apache.ibatis.session.defaults.DefaultSqlSession.wrapCollection() 的返回值。兼容一下。
         else if (arg instanceof DefaultSqlSession.StrictMap) {
-          AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(baseModelELEvaluator,
-                  arg, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
+          AdditionWrapper<?> paramWrapper = new AdditionWrapper<>(baseModelELEvaluator, arg, additionAttrList);
           paramWrapper.putAll((DefaultSqlSession.StrictMap<?>) arg);
           paramWrapper.init();
           args[1] = paramWrapper;
@@ -528,21 +529,18 @@ public class BaseModelInterceptor implements Interceptor {
         else {
           TypeHandlerRegistry typeHandlerRegistry = mappedStatement.getConfiguration().getTypeHandlerRegistry();
           if (typeHandlerRegistry.hasTypeHandler(arg.getClass())) {
-            AdditionalParamWrapper<?> paramWrapper = new AdditionalParamWrapper<>(baseModelELEvaluator,
-                    arg, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
+            AdditionWrapper<?> paramWrapper = new AdditionWrapper<>(baseModelELEvaluator, arg, additionAttrList);
             paramWrapper.setFallback(true);
             paramWrapper.init();
             args[1] = paramWrapper;
           } else if (arg instanceof BaseModel) {
             BaseModel baseModel = (BaseModel) arg;
-            BaseModelAdditionalParamWrapper paramWrapper = new BaseModelAdditionalParamWrapper(baseModelELEvaluator,
-                    baseModel, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
+            BaseModelAdditionWrapper paramWrapper = new BaseModelAdditionWrapper(baseModelELEvaluator, baseModel, additionAttrList);
             paramWrapper.init();
             replaceKeyGenerator(executor, mappedStatement);
             args[1] = paramWrapper;
           } else {
-            PojoAdditionalParamWrapper<?> paramWrapper = new PojoAdditionalParamWrapper<>(baseModelELEvaluator,
-                    arg, Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList()));
+            PojoAdditionWrapper<?> paramWrapper = new PojoAdditionWrapper<>(baseModelELEvaluator, arg, additionAttrList);
             paramWrapper.init();
             replaceKeyGenerator(executor, mappedStatement);
             args[1] = paramWrapper;
@@ -552,6 +550,14 @@ public class BaseModelInterceptor implements Interceptor {
     }
 
     return invocation.proceed();
+  }
+
+  private List<AdditionAttr> mergeAddition(AdditionalParam[] additionalParams, AdditionalValue[] additionalValues) {
+    // 每一次都必须是新的对象
+    List<AdditionAttr> additionAttrList1 = Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList());
+    List<AdditionAttr> additionAttrList2 = Arrays.stream(additionalValues).map(this::toAttr).collect(Collectors.toList());
+    additionAttrList1.addAll(additionAttrList2);
+    return additionAttrList1;
   }
 
   private void replaceKeyGenerator(Executor executor, MappedStatement mappedStatement) {
@@ -570,53 +576,90 @@ public class BaseModelInterceptor implements Interceptor {
     metaObject.setValue("keyGenerator", baseModelKeyGenerator);
   }
 
-  private AdditionalParamAttr toAttr(AdditionalParam additionalParam) {
-    AdditionalParamAttr additionalParamAttr = new AdditionalParamAttr();
-    additionalParamAttr.setName(additionalParam.name());
-    additionalParamAttr.setColumnName(additionalParam.columnName());
-    additionalParamAttr.setExpression(additionalParam.expression());
-    additionalParamAttr.setJdbcType(additionalParam.jdbcType());
-    additionalParamAttr.setIfValue(additionalParam.ifValue());
-    additionalParamAttr.setIfInjected(additionalParam.ifInjected());
-    return additionalParamAttr;
+  private AdditionAttr toAttr(AdditionalValue additionalValue) {
+    AdditionAttr additionAttr = new AdditionAttr();
+    additionAttr.setName(additionalValue.name());
+    additionAttr.setColumnName(additionalValue.columnName());
+    additionAttr.setExpression(additionalValue.expression());
+    additionAttr.setJdbcType(additionalValue.jdbcType());
+    additionAttr.setIfValue(additionalValue.ifValue());
+    additionAttr.setIfInjected(true);
+    return additionAttr;
   }
 
+  private AdditionAttr toAttr(AdditionalParam additionalValue) {
+    AdditionAttr additionAttr = new AdditionAttr();
+    additionAttr.setName(additionalValue.name());
+    additionAttr.setExpression(additionalValue.expression());
+    additionAttr.setIfValue(true);
+    additionAttr.setIfInjected(false);
+    return additionAttr;
+  }
+
+  private static final Map<String, AdditionalValue[]> ADDITINAL_VALUE_MAP = new ConcurrentHashMap<>();
   private static final Map<String, AdditionalParam[]> ADDITINAL_PARAM_MAP = new ConcurrentHashMap<>();
+
+  private AdditionalValue[] extractAdditionalValue(String msId) {
+    if (msId.endsWith(SELECT_KEY_SUFFIX)) {
+      return new AdditionalValue[0];
+    }
+    return ADDITINAL_VALUE_MAP.computeIfAbsent(msId, msId1 -> {
+      AdditionalValue[] additionalValues = extractAddition(msId1, AdditionalValue.class);
+      if (additionalValues == null) {
+        return new AdditionalValue[0];
+      }
+      validRepeat(msId, additionalValues, extractAdditionalParam(msId));
+      return additionalValues;
+    });
+  }
 
   private AdditionalParam[] extractAdditionalParam(String msId) {
     if (msId.endsWith(SELECT_KEY_SUFFIX)) {
       return new AdditionalParam[0];
     }
-    return ADDITINAL_PARAM_MAP.computeIfAbsent(msId,
-            new Function<String, AdditionalParam[]>() {
-              @Override
-              @SneakyThrows
-              public AdditionalParam[] apply(String s) {
-                int end = msId.lastIndexOf(".");
-                Class<?> aClass = Class.forName(msId.substring(0, end));
-                String methodName = msId.substring(end + 1);
-                Method[] methods = aClass.getMethods();
-                for (Method method : methods) {
-                  // mybatis 动态代理模式不支持函数重载。用方法名匹配没问题。
-                  if (method.getName().equals(methodName)) {
-                    AdditionalParam[] additionalParams = method.getAnnotationsByType(AdditionalParam.class);
-                    validRepeat(msId, additionalParams);
-                    return additionalParams;
-                  }
-                }
-                throw new BaseModelException(String.format("Can not extract AdditionalParam from MappedStatement[%s]！", msId));
-              }
-            });
+    return ADDITINAL_PARAM_MAP.computeIfAbsent(msId, msId1 -> {
+      AdditionalParam[] additionalParams = extractAddition(msId1, AdditionalParam.class);
+      if (additionalParams == null) {
+        return new AdditionalParam[0];
+      }
+//      validRepeat(msId, extractAdditionalValue(msId), additionalParams);
+      return additionalParams;
+    });
   }
 
-  private void validRepeat(String msId, AdditionalParam[] additionalParams) {
-    Set<String> additionalParamNameSet = new HashSet<>();
+  @SneakyThrows
+  private <T extends Annotation> T[] extractAddition(String msId, Class<T> clazz) {
+    if (msId.endsWith(SELECT_KEY_SUFFIX)) {
+      return null;
+    }
+    int end = msId.lastIndexOf(".");
+    Class<?> aClass = Class.forName(msId.substring(0, end));
+    String methodName = msId.substring(end + 1);
+    Method[] methods = aClass.getMethods();
+    for (Method method : methods) {
+      // mybatis 动态代理模式不支持函数重载。用方法名匹配没问题。
+      if (method.getName().equals(methodName)) {
+        return method.getAnnotationsByType(clazz);
+      }
+    }
+    throw new BaseModelException(String.format("Can not extract [%s] from MappedStatement[%s]！", clazz, msId));
+  }
+
+  private void validRepeat(String msId, AdditionalValue[] additionalValues, AdditionalParam[] additionalParams) {
+    Set<String> additionNameSet = new HashSet<>();
+    for (AdditionalValue additionalValue : additionalValues) {
+      String name = additionalValue.name();
+      if (additionNameSet.contains(name)) {
+        throw new BaseModelException(String.format("Addition[%s] of MappedStatement[%s] repeat.", name, msId));
+      }
+      additionNameSet.add(name);
+    }
     for (AdditionalParam additionalParam : additionalParams) {
       String name = additionalParam.name();
-      if (additionalParamNameSet.contains(name)) {
-        throw new BaseModelException(String.format("AdditionalParam[%s] of MappedStatement[%s] repeat.", name, msId));
+      if (additionNameSet.contains(name)) {
+        throw new BaseModelException(String.format("Addition[%s] of MappedStatement[%s] repeat.", name, msId));
       }
-      additionalParamNameSet.add(name);
+      additionNameSet.add(name);
     }
   }
 
