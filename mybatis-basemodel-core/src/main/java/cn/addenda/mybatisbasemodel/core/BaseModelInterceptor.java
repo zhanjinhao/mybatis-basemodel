@@ -217,7 +217,7 @@ public class BaseModelInterceptor implements Interceptor {
     Update update = parseAndGetStatement2(statementHandler, Update.class);
 
     List<ParameterMapping> injectedParameterMappingList = generateParameterMapping(mappedStatement, additionWrapper, JSqlParserUtils.wrap(update));
-    replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappingList, countOccurrencesOf(update.getWhere().toString(), "?"));
+    replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappingList, JSqlParserUtils.countJdbcParameter(update.getWhere()));
   }
 
   private void replaceParameterMapping(StatementHandler statementHandler, MappedStatement mappedStatement,
@@ -339,7 +339,7 @@ public class BaseModelInterceptor implements Interceptor {
     Update update = parseAndGetStatement2(statementHandler, Update.class);
 
     List<ParameterMapping> injectedParameterMappings = generateParameterMapping(mappedStatement, BaseModelMetaDataUtils.getUpdateFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(update));
-    replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappings, countOccurrencesOf(update.getWhere().toString(), "?"));
+    replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappings, JSqlParserUtils.countJdbcParameter(update.getWhere()));
   }
 
   private List<ParameterMapping> generateParameterMapping(MappedStatement mappedStatement, List<String> injectedFieldNameList, BaseModel baseModel,
@@ -788,29 +788,6 @@ public class BaseModelInterceptor implements Interceptor {
             .map(Column::getColumnName)
             .map(this::removeGrave)
             .collect(Collectors.toList());
-  }
-
-  /**
-   * todo 应该使用SQL解析器获取JdbcParameter的
-   * <p>
-   * Count the occurrences of the substring {@code sub} in string {@code str}.
-   *
-   * @param str string to search in
-   * @param sub string to search for
-   */
-  private int countOccurrencesOf(String str, String sub) {
-    if (str == null || str.isEmpty() || sub == null || sub.isEmpty()) {
-      return 0;
-    }
-
-    int count = 0;
-    int pos = 0;
-    int idx;
-    while ((idx = str.indexOf(sub, pos)) != -1) {
-      ++count;
-      pos = idx + sub.length();
-    }
-    return count;
   }
 
   private String removeGrave(String str) {
