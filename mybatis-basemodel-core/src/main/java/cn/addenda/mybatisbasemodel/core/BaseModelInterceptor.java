@@ -73,6 +73,10 @@ public class BaseModelInterceptor implements Interceptor {
 
   @Override
   public Object intercept(Invocation invocation) throws Throwable {
+    if (!BaseModelContext.ifEnable()) {
+      return invocation.proceed();
+    }
+
     Object actualTarget = ProxyUtils.resolveActualObject(invocation.getTarget());
 
     if (actualTarget instanceof StatementHandler) {
@@ -244,13 +248,13 @@ public class BaseModelInterceptor implements Interceptor {
       if (sqlSource instanceof RawSqlSource) {
         List<ParameterMapping> parameterMappingList = new ArrayList<>(currentParameterMappingList);
         for (ParameterMapping parameterMapping : injectedParameterMappingList) {
-          parameterMappingList.add(insertIndex, parameterMapping);
+          parameterMappingList.add(insertIndex++, parameterMapping);
         }
         MetaObject metaObject = mappedStatement.getConfiguration().newMetaObject(boundSql);
         metaObject.setValue("parameterMappings", parameterMappingList);
       } else if (sqlSource instanceof DynamicSqlSource) {
         for (ParameterMapping parameterMapping : injectedParameterMappingList) {
-          currentParameterMappingList.add(insertIndex, parameterMapping);
+          currentParameterMappingList.add(insertIndex++, parameterMapping);
         }
       }
     }
@@ -765,20 +769,37 @@ public class BaseModelInterceptor implements Interceptor {
 
   private void fillInsert(BaseModel baseModel, Configuration configuration) {
     List<String> allFieldNameList = BaseModelMetaDataUtils.getAllFieldNameList(baseModel);
-    MetaObject metaObject = configuration.newMetaObject(baseModel);
-    for (String fieldName : allFieldNameList) {
-      if (baseModelSource.ifValue(fieldName)) {
-        metaObject.setValue(fieldName, baseModelSource.getValue(fieldName, baseModel));
-      }
-    }
+    doFill(allFieldNameList, baseModel, configuration);
   }
 
   private void fillUpdate(BaseModel baseModel, Configuration configuration) {
     List<String> updateFieldNameList = BaseModelMetaDataUtils.getUpdateFieldNameList(baseModel);
+    doFill(updateFieldNameList, baseModel, configuration);
+  }
+
+  private void doFill(List<String> fieldNameList, BaseModel baseModel, Configuration configuration) {
     MetaObject metaObject = configuration.newMetaObject(baseModel);
-    for (String fieldName : updateFieldNameList) {
-      if (baseModelSource.ifValue(fieldName)) {
+    short fillMode = BaseModelContext.getFillMode();
+    if (fillMode == BaseModelContext.FILL_MODE_SKIP) {
+      return;
+    }
+    for (String fieldName : fieldNameList) {
+      if (!baseModelSource.ifValue(fieldName)) {
+        continue;
+      }
+      if (fillMode == BaseModelContext.FILL_MODE_FORCE) {
         metaObject.setValue(fieldName, baseModelSource.getValue(fieldName, baseModel));
+      } else if (fillMode == BaseModelContext.FILL_MODE_NULL) {
+        if (metaObject.getValue(fieldName) == null) {
+          metaObject.setValue(fieldName, baseModelSource.getValue(fieldName, baseModel));
+        }
+      } else if (fillMode == BaseModelContext.FILL_MODE_EMPTY) {
+        Object value = metaObject.getValue(fieldName);
+        if (value == null || ("".equals(value))) {
+          metaObject.setValue(fieldName, baseModelSource.getValue(fieldName, baseModel));
+        }
+      } else {
+        throw new IllegalArgumentException("unsupported fill mode : %s");
       }
     }
   }
