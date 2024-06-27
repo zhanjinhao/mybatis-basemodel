@@ -81,6 +81,9 @@ public interface UserMapper {
   @AdditionalParam(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL)
   User queryByIdAndModifier(@Param("id") Long id);
 
+  @AdditionalParam(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL)
+  User queryByIdAndModifier4(Long id);
+
   @AdditionalParam(name = "modifier2", expression = SimpleBaseModelSource.USER_EL)
   User queryByIdAndModifier2(User user);
 

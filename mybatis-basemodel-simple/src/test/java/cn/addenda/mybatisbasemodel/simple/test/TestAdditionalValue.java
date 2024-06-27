@@ -104,5 +104,23 @@ class TestAdditionalValue {
       }
     });
 
+
+    SimpleBaseModelSource.runWithUser("lisi", () -> {
+      try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        User user1 = mapper.queryByIdAndModifier4(id.get());
+        Assertions.assertNotNull(user1);
+      }
+    });
+
+
+    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+      try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+        UserMapper mapper = sqlSession.getMapper(UserMapper.class);
+        User user1 = mapper.queryByIdAndModifier4(id.get());
+        Assertions.assertNull(user1);
+      }
+    });
+
   }
 }
