@@ -178,8 +178,18 @@ public class BaseModelInterceptor implements Interceptor {
       }
 
       if (!additionAttr.isIfValue()) {
-        // todo 需不需要解析一下？Object evaluate = baseModelELEvaluator.evaluate(additionalParamAttr.el(), additionalParamAttr);
-        Expression expression = JSqlParserUtils.parseExpression(additionAttr.getExpression());
+        String expressionStr;
+        if (additionAttr.isAlwaysEvaluate()) {
+          Object evaluate = baseModelELEvaluator.evaluate(additionAttr.getExpression(), additionWrapper.getOriginalParam());
+          if (evaluate instanceof String) {
+            expressionStr = (String) evaluate;
+          } else {
+            throw new BaseModelException(String.format("The result of expression evaluation is not of type String. expression:[%s], result:[%s].", additionAttr.getExpression(), evaluate));
+          }
+        } else {
+          expressionStr = additionAttr.getExpression();
+        }
+        Expression expression = JSqlParserUtils.parseExpression(expressionStr);
         if (expression == null) {
           throw new UnsupportedOperationException(
                   String.format("mappedStatement [%s], can not parse expression from [%s], current name is [%s].",
@@ -583,6 +593,7 @@ public class BaseModelInterceptor implements Interceptor {
     additionAttr.setJdbcType(additionalValue.jdbcType());
     additionAttr.setIfValue(additionalValue.ifValue());
     additionAttr.setIfInjected(true);
+    additionAttr.setAlwaysEvaluate(additionalValue.alwaysEvaluate());
     return additionAttr;
   }
 

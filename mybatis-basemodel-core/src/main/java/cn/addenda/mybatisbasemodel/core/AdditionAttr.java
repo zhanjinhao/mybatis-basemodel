@@ -26,6 +26,8 @@ public class AdditionAttr {
 
   private boolean ifInjected;
 
+  private boolean alwaysEvaluate;
+
   private Object value;
 
   public Object getOrEvaluate(Object param, BiFunction<String, Object, Object> function) {

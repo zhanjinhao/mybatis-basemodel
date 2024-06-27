@@ -43,4 +43,10 @@ public @interface AdditionalValue {
    */
   JdbcType jdbcType();
 
+  /**
+   * 当 {@link AdditionalValue#ifValue()} 为false时。
+   * 若此参数配为true，调用{@link JSqlParserUtils#parseExpression(String)}前调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
+   */
+  boolean alwaysEvaluate() default false;
+
 }
