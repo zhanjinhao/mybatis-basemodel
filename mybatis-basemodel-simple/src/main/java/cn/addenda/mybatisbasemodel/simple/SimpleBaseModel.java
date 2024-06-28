@@ -1,6 +1,7 @@
 package cn.addenda.mybatisbasemodel.simple;
 
 import cn.addenda.mybatisbasemodel.core.BaseModel;
+import cn.addenda.mybatisbasemodel.core.annotation.BaseModelExpression;
 import cn.addenda.mybatisbasemodel.core.annotation.InsertField;
 import cn.addenda.mybatisbasemodel.core.annotation.UpdateField;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
@@ -44,11 +45,13 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
   @Getter
   @Setter
   @InsertField
+  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifValue = true)
   private String creator;
 
   @Setter
   @Getter
   @InsertField
+  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifValue = true)
   private String creatorName;
 
   @Getter
@@ -56,24 +59,28 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
   @InsertField
   @JsonSerialize(using = LocalDateTimeStrSerializer.class)
   @JsonDeserialize(using = LocalDateTimeStrDeSerializer.class)
+  @BaseModelExpression(expression = "now(3)", ifValue = false)
   private LocalDateTime createTime;
 
   @Getter
   @Setter
   @InsertField
   @UpdateField
+  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifValue = true)
   private String modifier;
 
   @Getter
   @Setter
   @InsertField
   @UpdateField
+  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifValue = true)
   private String modifierName;
 
   @Getter
   @Setter
   @InsertField
   @UpdateField
+  @BaseModelExpression(expression = "now(3)", ifValue = false)
   @JsonSerialize(using = LocalDateTimeStrSerializer.class)
   @JsonDeserialize(using = LocalDateTimeStrDeSerializer.class)
   private LocalDateTime modifyTime;

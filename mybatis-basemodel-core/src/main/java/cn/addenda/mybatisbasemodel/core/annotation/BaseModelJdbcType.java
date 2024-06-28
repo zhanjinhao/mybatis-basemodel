@@ -9,7 +9,7 @@ import java.lang.annotation.*;
  * @since 2023/6/4 23:19
  */
 @Inherited
-@Target({ElementType.METHOD})
+@Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface BaseModelJdbcType {
 

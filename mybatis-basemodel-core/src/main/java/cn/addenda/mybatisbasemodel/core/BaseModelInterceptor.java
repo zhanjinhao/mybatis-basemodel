@@ -1,14 +1,9 @@
 package cn.addenda.mybatisbasemodel.core;
 
-import cn.addenda.mybatisbasemodel.core.annotation.AdditionalParam;
-import cn.addenda.mybatisbasemodel.core.annotation.AdditionalValue;
-import cn.addenda.mybatisbasemodel.core.annotation.BaseModelColumnName;
-import cn.addenda.mybatisbasemodel.core.annotation.BaseModelJdbcType;
 import cn.addenda.mybatisbasemodel.core.util.*;
 import cn.addenda.mybatisbasemodel.core.wrapper.AdditionWrapper;
 import cn.addenda.mybatisbasemodel.core.wrapper.BaseModelAdditionWrapper;
 import cn.addenda.mybatisbasemodel.core.wrapper.PojoAdditionWrapper;
-import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -39,19 +34,11 @@ import org.apache.ibatis.session.defaults.DefaultSqlSession;
 import org.apache.ibatis.type.JdbcType;
 import org.apache.ibatis.type.TypeHandlerRegistry;
 
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.math.BigInteger;
 import java.sql.Connection;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
-
-import static org.apache.ibatis.executor.keygen.SelectKeyGenerator.SELECT_KEY_SUFFIX;
 
 @Intercepts({
         @Signature(type = StatementHandler.class, method = "prepare", args = {Connection.class, Integer.class}),
@@ -416,11 +403,7 @@ public class BaseModelInterceptor implements Interceptor {
   }
 
   private String calculateColumnName(Field field, List<String> columnNameList) {
-    String fieldName = field.getName();
-    String columnName = getColumnName(field);
-    if (null == columnName) {
-      columnName = camelCaseToSnakeCase(fieldName);
-    }
+    String columnName = BaseModelMetaDataUtils.getColumnName(field);
 
     // 属性去重，对于用户已经添加的字段，不能再自动注入
     if (columnNameList.contains(columnName)) {
@@ -431,34 +414,14 @@ public class BaseModelInterceptor implements Interceptor {
   }
 
   private String calculateColumnName(AdditionAttr additionAttr, List<String> columnNameList) {
-    String fieldName = additionAttr.getName();
+    String columnName = BaseModelMetaDataUtils.getColumnName(additionAttr);
 
-    String columnName = additionAttr.getColumnName();
-    if (AdditionAttr.BASE_MODEL_COLUMN.equals(columnName)) {
-      columnName = camelCaseToSnakeCase(fieldName);
-    }
     // 属性去重，对于用户已经添加的字段，不能再自动注入
     if (columnNameList.contains(columnName)) {
       return null;
     }
 
     return columnName;
-  }
-
-  private String getColumnName(Field field) {
-    BaseModelColumnName annotation = field.getAnnotation(BaseModelColumnName.class);
-    if (annotation == null) {
-      return null;
-    }
-    return annotation.value();
-  }
-
-  private JdbcType getJdbcType(Field field) {
-    BaseModelJdbcType annotation = field.getAnnotation(BaseModelJdbcType.class);
-    if (annotation == null) {
-      return null;
-    }
-    return annotation.value();
   }
 
   private Object interceptParameterHandler(ParameterHandler parameterHandler, Invocation invocation) throws Throwable {
@@ -511,9 +474,7 @@ public class BaseModelInterceptor implements Interceptor {
     MappedStatement mappedStatement = (MappedStatement) args[0];
     String msId = mappedStatement.getId();
 
-    AdditionalValue[] additionalValues = extractAdditionalValue(msId);
-    AdditionalParam[] additionalParams = extractAdditionalParam(msId);
-    List<AdditionAttr> additionAttrList = mergeAddition(additionalParams, additionalValues);
+    List<AdditionAttr> additionAttrList = MsIdAnnotationUtils.extractAddition(msId, mappedStatement.getSqlCommandType());
     if (!additionAttrList.isEmpty()) {
       // 观察org.apache.ibatis.reflection.ParamNameResolver.getNamedParams的实现可知，返回值一共有三种类型
       // - 没有参数时返回null
@@ -565,14 +526,6 @@ public class BaseModelInterceptor implements Interceptor {
     return invocation.proceed();
   }
 
-  private List<AdditionAttr> mergeAddition(AdditionalParam[] additionalParams, AdditionalValue[] additionalValues) {
-    // 每一次都必须是新的对象
-    List<AdditionAttr> additionAttrList1 = Arrays.stream(additionalParams).map(this::toAttr).collect(Collectors.toList());
-    List<AdditionAttr> additionAttrList2 = Arrays.stream(additionalValues).map(this::toAttr).collect(Collectors.toList());
-    additionAttrList1.addAll(additionAttrList2);
-    return additionAttrList1;
-  }
-
   private void replaceKeyGenerator(Executor executor, MappedStatement mappedStatement) {
     if (PluginUtils.isBatchMode(executor)) {
       return;
@@ -587,94 +540,6 @@ public class BaseModelInterceptor implements Interceptor {
     }
     BaseModelKeyGenerator baseModelKeyGenerator = new BaseModelKeyGenerator();
     metaObject.setValue("keyGenerator", baseModelKeyGenerator);
-  }
-
-  private AdditionAttr toAttr(AdditionalValue additionalValue) {
-    AdditionAttr additionAttr = new AdditionAttr();
-    additionAttr.setName(additionalValue.name());
-    additionAttr.setColumnName(additionalValue.columnName());
-    additionAttr.setExpression(additionalValue.expression());
-    additionAttr.setJdbcType(additionalValue.jdbcType());
-    additionAttr.setIfValue(additionalValue.ifValue());
-    additionAttr.setIfInjected(true);
-    additionAttr.setAlwaysEvaluate(additionalValue.alwaysEvaluate());
-    return additionAttr;
-  }
-
-  private AdditionAttr toAttr(AdditionalParam additionalValue) {
-    AdditionAttr additionAttr = new AdditionAttr();
-    additionAttr.setName(additionalValue.name());
-    additionAttr.setExpression(additionalValue.expression());
-    additionAttr.setIfValue(true);
-    additionAttr.setIfInjected(false);
-    return additionAttr;
-  }
-
-  private static final Map<String, AdditionalValue[]> ADDITINAL_VALUE_MAP = new ConcurrentHashMap<>();
-  private static final Map<String, AdditionalParam[]> ADDITINAL_PARAM_MAP = new ConcurrentHashMap<>();
-
-  private AdditionalValue[] extractAdditionalValue(String msId) {
-    if (msId.endsWith(SELECT_KEY_SUFFIX)) {
-      return new AdditionalValue[0];
-    }
-    return ADDITINAL_VALUE_MAP.computeIfAbsent(msId, msId1 -> {
-      AdditionalValue[] additionalValues = extractAddition(msId1, AdditionalValue.class);
-      if (additionalValues == null) {
-        return new AdditionalValue[0];
-      }
-      validRepeat(msId, additionalValues, extractAdditionalParam(msId));
-      return additionalValues;
-    });
-  }
-
-  private AdditionalParam[] extractAdditionalParam(String msId) {
-    if (msId.endsWith(SELECT_KEY_SUFFIX)) {
-      return new AdditionalParam[0];
-    }
-    return ADDITINAL_PARAM_MAP.computeIfAbsent(msId, msId1 -> {
-      AdditionalParam[] additionalParams = extractAddition(msId1, AdditionalParam.class);
-      if (additionalParams == null) {
-        return new AdditionalParam[0];
-      }
-//      validRepeat(msId, extractAdditionalValue(msId), additionalParams);
-      return additionalParams;
-    });
-  }
-
-  @SneakyThrows
-  private <T extends Annotation> T[] extractAddition(String msId, Class<T> clazz) {
-    if (msId.endsWith(SELECT_KEY_SUFFIX)) {
-      return null;
-    }
-    int end = msId.lastIndexOf(".");
-    Class<?> aClass = Class.forName(msId.substring(0, end));
-    String methodName = msId.substring(end + 1);
-    Method[] methods = aClass.getMethods();
-    for (Method method : methods) {
-      // mybatis 动态代理模式不支持函数重载。用方法名匹配没问题。
-      if (method.getName().equals(methodName)) {
-        return method.getAnnotationsByType(clazz);
-      }
-    }
-    throw new BaseModelException(String.format("Can not extract [%s] from MappedStatement[%s]！", clazz, msId));
-  }
-
-  private void validRepeat(String msId, AdditionalValue[] additionalValues, AdditionalParam[] additionalParams) {
-    Set<String> additionNameSet = new HashSet<>();
-    for (AdditionalValue additionalValue : additionalValues) {
-      String name = additionalValue.name();
-      if (additionNameSet.contains(name)) {
-        throw new BaseModelException(String.format("Addition[%s] of MappedStatement[%s] repeat.", name, msId));
-      }
-      additionNameSet.add(name);
-    }
-    for (AdditionalParam additionalParam : additionalParams) {
-      String name = additionalParam.name();
-      if (additionNameSet.contains(name)) {
-        throw new BaseModelException(String.format("Addition[%s] of MappedStatement[%s] repeat.", name, msId));
-      }
-      additionNameSet.add(name);
-    }
   }
 
   @Override
@@ -706,9 +571,6 @@ public class BaseModelInterceptor implements Interceptor {
 
   /**
    * 针对BaseModel的一个属性创建ParameterMapping对象
-   * org.apache.ibatis.type.JdbcType
-   *
-   * @param field BaseModel属性字段
    */
   private ParameterMapping buildParameterMapping(Field field, String fieldName, Configuration configuration) {
     if (field == null) {
@@ -716,49 +578,12 @@ public class BaseModelInterceptor implements Interceptor {
     }
     Class<?> propertyType = field.getType();
     ParameterMapping.Builder builder = new ParameterMapping.Builder(configuration, fieldName, propertyType);
-
-    JdbcType jdbcType = getJdbcType(field);
-    if (jdbcType != null) {
-      builder.jdbcType(jdbcType);
-      return builder.build();
-    }
-
-    if (propertyType == boolean.class || propertyType == Boolean.class) {
-      jdbcType = JdbcType.BOOLEAN;
-    } else if (propertyType == Byte.class || propertyType == byte.class) {
-      jdbcType = JdbcType.TINYINT;
-    } else if (propertyType == Short.class || propertyType == short.class) {
-      jdbcType = JdbcType.SMALLINT;
-    } else if (propertyType == Integer.class || propertyType == int.class) {
-      jdbcType = JdbcType.INTEGER;
-    } else if (propertyType == Long.class || propertyType == long.class) {
-      jdbcType = JdbcType.BIGINT;
-    } else if (propertyType == Float.class || propertyType == float.class) {
-      jdbcType = JdbcType.FLOAT;
-    } else if (propertyType == Double.class || propertyType == double.class) {
-      jdbcType = JdbcType.DOUBLE;
-    } else if (propertyType == char.class || propertyType == Character.class) {
-      jdbcType = JdbcType.CHAR;
-    } else if (CharSequence.class.isAssignableFrom(propertyType)) {
-      jdbcType = JdbcType.VARCHAR;
-    } else if (propertyType == LocalDateTime.class) {
-      jdbcType = JdbcType.TIMESTAMP;
-    } else if (propertyType == LocalDate.class) {
-      jdbcType = JdbcType.DATE;
-    } else if (propertyType == LocalTime.class) {
-      jdbcType = JdbcType.TIME;
-    } else if (propertyType == BigInteger.class) {
-      jdbcType = JdbcType.BIGINT;
-    } else {
-      throw new IllegalArgumentException(String.format("[%s] : Unsupported property type", propertyType.getCanonicalName()));
-    }
-    builder.jdbcType(jdbcType);
+    builder.jdbcType(MsIdAnnotationUtils.calculateJdbcType(field));
     return builder.build();
   }
 
   /**
-   * 针对BaseModel的一个属性创建ParameterMapping对象
-   * org.apache.ibatis.type.JdbcType
+   * 针对AdditionAttr创建ParameterMapping对象
    */
   private ParameterMapping buildParameterMapping(JdbcType jdbcType, String fieldName, Configuration configuration) {
     // 没有指定propertyType，调用的是UnknownTypeHandler。在UnknownTypeHandler里能拿到propertyType。再获取真正的TypeHandler
@@ -830,18 +655,6 @@ public class BaseModelInterceptor implements Interceptor {
       return str.substring(start, end);
     }
     return str;
-  }
-
-  private String camelCaseToSnakeCase(String camelCase) {
-    StringBuilder builder = new StringBuilder();
-    for (int i = 0; i < camelCase.length(); i++) {
-      char ch = camelCase.charAt(i);
-      if (Character.isUpperCase(ch)) {
-        builder.append("_");
-      }
-      builder.append(Character.toLowerCase(ch));
-    }
-    return builder.toString();
   }
 
 }

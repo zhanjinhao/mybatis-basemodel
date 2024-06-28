@@ -1,5 +1,6 @@
 package cn.addenda.mybatisbasemodel.simple;
 
+import cn.addenda.mybatisbasemodel.core.annotation.AdditionalBaseModel;
 import cn.addenda.mybatisbasemodel.core.annotation.AdditionalParam;
 import cn.addenda.mybatisbasemodel.core.annotation.AdditionalValue;
 import cn.addenda.mybatisbasemodel.simple.test.UserWithHost;
@@ -89,6 +90,12 @@ public interface UserMapper {
 
   @AdditionalParam(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL)
   User queryByIdAndModifier3(User user);
+
+  @AdditionalBaseModel(SimpleBaseModel.class)
+  void insert5(@Param("nickName") String nickName, @Param("age") Integer age, @Param("birthday") LocalDateTime birthday);
+
+  @AdditionalBaseModel(SimpleBaseModel.class)
+  int updateById5(@Param("id") Long id, @Param("nickName") String nickName, @Param("age") Integer age, @Param("birthday") LocalDateTime birthday);
 
 }
 

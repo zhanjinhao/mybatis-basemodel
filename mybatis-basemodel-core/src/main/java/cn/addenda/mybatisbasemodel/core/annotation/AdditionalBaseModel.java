@@ -1,5 +1,7 @@
 package cn.addenda.mybatisbasemodel.core.annotation;
 
+import cn.addenda.mybatisbasemodel.core.BaseModel;
+
 import java.lang.annotation.*;
 
 /**
@@ -7,10 +9,10 @@ import java.lang.annotation.*;
  * @since 2023/6/4 23:19
  */
 @Inherited
-@Target({ElementType.FIELD})
+@Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface BaseModelColumnName {
+public @interface AdditionalBaseModel {
 
-  String value();
+  Class<? extends BaseModel> value();
 
 }

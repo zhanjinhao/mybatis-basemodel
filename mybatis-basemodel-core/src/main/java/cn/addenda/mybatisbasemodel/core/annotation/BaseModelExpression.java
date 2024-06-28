@@ -9,8 +9,10 @@ import java.lang.annotation.*;
 @Inherited
 @Target({ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface BaseModelColumnName {
+public @interface BaseModelExpression {
 
-  String value();
+  String expression();
+
+  boolean ifValue();
 
 }

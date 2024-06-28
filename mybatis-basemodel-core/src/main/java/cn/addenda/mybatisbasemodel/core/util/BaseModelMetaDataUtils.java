@@ -1,11 +1,13 @@
 package cn.addenda.mybatisbasemodel.core.util;
 
+import cn.addenda.mybatisbasemodel.core.AdditionAttr;
 import cn.addenda.mybatisbasemodel.core.BaseModel;
 import cn.addenda.mybatisbasemodel.core.BaseModelAdapter;
-import cn.addenda.mybatisbasemodel.core.annotation.InsertField;
-import cn.addenda.mybatisbasemodel.core.annotation.UpdateField;
+import cn.addenda.mybatisbasemodel.core.BaseModelException;
+import cn.addenda.mybatisbasemodel.core.annotation.*;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import org.apache.ibatis.type.JdbcType;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
@@ -103,6 +105,59 @@ public class BaseModelMetaDataUtils {
       c = c.getSuperclass();
     }
     return fieldList;
+  }
+
+  public static String getExpression(Field field) {
+    BaseModelExpression annotation = field.getAnnotation(BaseModelExpression.class);
+    if (annotation == null) {
+      throw new BaseModelException(String.format("can not extract [%s] from [%s].", BaseModelExpression.class, field));
+    }
+    return annotation.expression();
+  }
+
+  public static boolean getIfValue(Field field) {
+    BaseModelExpression annotation = field.getAnnotation(BaseModelExpression.class);
+    if (annotation == null) {
+      throw new BaseModelException(String.format("can not extract [%s] from [%s].", BaseModelExpression.class, field));
+    }
+    return annotation.ifValue();
+  }
+
+  public static String getColumnName(Field field) {
+    BaseModelColumnName annotation = field.getAnnotation(BaseModelColumnName.class);
+    if (annotation == null) {
+      return camelCaseToSnakeCase(field.getName());
+    }
+    return annotation.value();
+  }
+
+  public static String getColumnName(AdditionAttr additionAttr) {
+    String columnName = additionAttr.getColumnName();
+    if (AdditionAttr.BASE_MODEL_COLUMN.equals(columnName)) {
+      String fieldName = additionAttr.getName();
+      columnName = BaseModelMetaDataUtils.camelCaseToSnakeCase(fieldName);
+    }
+    return columnName;
+  }
+
+  public static JdbcType getJdbcType(Field field) {
+    BaseModelJdbcType annotation = field.getAnnotation(BaseModelJdbcType.class);
+    if (annotation == null) {
+      return null;
+    }
+    return annotation.value();
+  }
+
+  private static String camelCaseToSnakeCase(String camelCase) {
+    StringBuilder builder = new StringBuilder();
+    for (int i = 0; i < camelCase.length(); i++) {
+      char ch = camelCase.charAt(i);
+      if (Character.isUpperCase(ch)) {
+        builder.append("_");
+      }
+      builder.append(Character.toLowerCase(ch));
+    }
+    return builder.toString();
   }
 
 }
