@@ -135,7 +135,7 @@ public class BaseModelMetaDataUtils {
     String columnName = additionAttr.getColumnName();
     if (AdditionAttr.BASE_MODEL_COLUMN.equals(columnName)) {
       String fieldName = additionAttr.getName();
-      columnName = BaseModelMetaDataUtils.camelCaseToSnakeCase(fieldName);
+      columnName = camelCaseToSnakeCase(fieldName);
     }
     return columnName;
   }

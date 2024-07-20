@@ -16,11 +16,9 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class DateUtils {
+class DateUtils {
 
   public static final String FULL_FORMATTER = "yyyy-MM-dd HH:mm:ss.SSS";
-  public static final String YMD_FORMATTER = "yyyy-MM-dd";
-  public static final String HMSS_FORMATTER = "HH:mm:ss.SSS";
   private static final Map<String, DateTimeFormatter> FORMATTER_MAP = new ConcurrentHashMap<>();
 
   private static ZoneId defaultZoneId;
