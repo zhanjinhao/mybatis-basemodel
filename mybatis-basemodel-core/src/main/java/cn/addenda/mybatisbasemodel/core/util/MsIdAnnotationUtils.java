@@ -85,10 +85,10 @@ public class MsIdAnnotationUtils {
       additionAttr.setColumnName(BaseModelMetaDataUtils.getColumnName(field));
       additionAttr.setExpression(new String[]{BaseModelMetaDataUtils.getExpression(field)});
       additionAttr.setJdbcType(calculateJdbcType(field));
-      additionAttr.setIfValue(BaseModelMetaDataUtils.getIfValue(field));
+      additionAttr.setIfObj(BaseModelMetaDataUtils.getIfObj(field));
       additionAttr.setIfInjected(true);
       additionAttr.setExpressionPreEvaluate(false);
-      additionAttr.setValuePreEvaluate(true);
+      additionAttr.setObjPreEvaluate(true);
       additionAttrList.add(additionAttr);
     }
     return additionAttrList.toArray(new AdditionAttr[0]);

@@ -115,12 +115,12 @@ public class BaseModelMetaDataUtils {
     return annotation.expression();
   }
 
-  public static boolean getIfValue(Field field) {
+  public static boolean getIfObj(Field field) {
     BaseModelExpression annotation = field.getAnnotation(BaseModelExpression.class);
     if (annotation == null) {
       throw new BaseModelException(String.format("can not extract [%s] from [%s].", BaseModelExpression.class, field));
     }
-    return annotation.ifValue();
+    return annotation.ifObj();
   }
 
   public static String getColumnName(Field field) {

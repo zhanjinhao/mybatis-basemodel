@@ -66,7 +66,7 @@ public class AdditionWrapper<O> extends MapperMethod.ParamMap<Object> {
     } catch (BindingException bindingException) {
       for (AdditionAttr additionAttr : additionAttrList) {
         if (additionAttr.getName().equals(key)) {
-          if (!additionAttr.isIfValue()) {
+          if (!additionAttr.isIfObj()) {
             throw new BaseModelException(String.format("Current addition[%s] is not value.", additionAttr));
           }
           return additionAttr.getOrEvaluate(originalParam, baseModelELEvaluator::evaluate);

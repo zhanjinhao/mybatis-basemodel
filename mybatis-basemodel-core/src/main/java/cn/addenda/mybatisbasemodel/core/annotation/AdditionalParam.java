@@ -28,6 +28,6 @@ public @interface AdditionalParam {
   /**
    * 若此参数配为true，使用前会调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
    */
-  boolean valuePreEvaluate() default true;
+  boolean objPreEvaluate() default true;
 
 }

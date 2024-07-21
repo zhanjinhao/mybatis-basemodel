@@ -26,15 +26,15 @@ public class AdditionAttr {
 
   private JdbcType jdbcType;
 
-  private boolean ifValue;
+  private boolean ifObj;
 
   private boolean ifInjected;
 
   private boolean expressionPreEvaluate;
 
-  private boolean valuePreEvaluate;
+  private boolean objPreEvaluate;
 
-  private List<Object> value;
+  private List<Object> obj;
 
   public AdditionAttr() {
   }
@@ -44,10 +44,10 @@ public class AdditionAttr {
     this.setColumnName(additionAttr.getColumnName());
     this.setExpression(additionAttr.getExpression());
     this.setJdbcType(additionAttr.getJdbcType());
-    this.setIfValue(additionAttr.isIfValue());
+    this.setIfObj(additionAttr.isIfObj());
     this.setIfInjected(additionAttr.isIfInjected());
     this.setExpressionPreEvaluate(additionAttr.isExpressionPreEvaluate());
-    this.setValuePreEvaluate(additionAttr.isValuePreEvaluate());
+    this.setObjPreEvaluate(additionAttr.isObjPreEvaluate());
   }
 
   public AdditionAttr(AdditionalValue additionalValue) {
@@ -55,37 +55,37 @@ public class AdditionAttr {
     this.setColumnName(additionalValue.columnName());
     this.setExpression(new String[]{additionalValue.expression()});
     this.setJdbcType(additionalValue.jdbcType());
-    this.setIfValue(additionalValue.ifValue());
+    this.setIfObj(additionalValue.ifObj());
     this.setIfInjected(true);
     this.setExpressionPreEvaluate(additionalValue.expressionPreEvaluate());
-    this.setValuePreEvaluate(additionalValue.valuePreEvaluate());
+    this.setObjPreEvaluate(additionalValue.objPreEvaluate());
   }
 
   public AdditionAttr(AdditionalParam additionalParam) {
     this.setName(additionalParam.name());
     this.setExpression(additionalParam.expression());
-    this.setIfValue(true);
+    this.setIfObj(true);
     this.setIfInjected(false);
     this.setExpressionPreEvaluate(false);
-    this.setValuePreEvaluate(additionalParam.valuePreEvaluate());
+    this.setObjPreEvaluate(additionalParam.objPreEvaluate());
   }
 
   public Object getOrEvaluate(Object param, BiFunction<String, Object, Object> function) {
-    if (value != null) {
-      if (value.size() == 1) {
-        return value.get(0);
+    if (obj != null) {
+      if (obj.size() == 1) {
+        return obj.get(0);
       }
-      return value;
+      return obj;
     }
     List<Object> a = new ArrayList<>();
     for (String item : expression) {
-      if (valuePreEvaluate) {
+      if (objPreEvaluate) {
         a.add(function.apply(item, param));
       } else {
         a.add(item);
       }
     }
-    this.value = a;
+    this.obj = a;
     return getOrEvaluate(param, function);
   }
 

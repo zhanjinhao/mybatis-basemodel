@@ -39,7 +39,7 @@ public class SimpleBaseModelSource implements BaseModelSource {
 
 
   @Override
-  public Object getValue(String fieldName, BaseModel model) {
+  public Object getObj(String fieldName, BaseModel model) {
     if (SimpleBaseModel.F_CREATOR.equals(fieldName) || SimpleBaseModel.F_MODIFIER.equals(fieldName)
             || SimpleBaseModel.F_CREATOR_NAME.equals(fieldName) || (SimpleBaseModel.F_MODIFIER_NAME.equals(fieldName))) {
       return USER_SOURCE_TL.get();
@@ -53,7 +53,7 @@ public class SimpleBaseModelSource implements BaseModelSource {
   }
 
   @Override
-  public boolean ifValue(String fieldName) {
+  public boolean ifObj(String fieldName) {
     if (SimpleBaseModel.F_CREATE_TIME.equals(fieldName) || (SimpleBaseModel.F_MODIFY_TIME.equals(fieldName))) {
       return false;
     }

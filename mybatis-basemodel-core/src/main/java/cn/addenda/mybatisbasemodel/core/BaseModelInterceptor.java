@@ -168,7 +168,7 @@ public class BaseModelInterceptor implements Interceptor {
         continue;
       }
 
-      if (!additionAttr.isIfValue()) {
+      if (!additionAttr.isIfObj()) {
         String expressionStr;
         if (additionAttr.isExpressionPreEvaluate()) {
           Object evaluate = additionAttr.getOrEvaluate(additionWrapper.getOriginalParam(), baseModelELEvaluator::evaluate);
@@ -267,7 +267,7 @@ public class BaseModelInterceptor implements Interceptor {
         continue;
       }
 
-      if (additionAttr.isIfValue()) {
+      if (additionAttr.isIfObj()) {
         ParameterMapping parameterMapping = buildParameterMapping(additionAttr.getJdbcType(), additionAttr.getName(), configuration);
         parameterMappingList.add(parameterMapping);
       }
@@ -305,7 +305,7 @@ public class BaseModelInterceptor implements Interceptor {
         continue;
       }
 
-      if (!baseModelSource.ifValue(fieldName)) {
+      if (!baseModelSource.ifObj(fieldName)) {
         String expressionStr = baseModelSource.getExpression(fieldName, baseModel);
         Expression expression = JSqlParserUtils.parseExpression(expressionStr);
         if (expression == null) {
@@ -352,7 +352,7 @@ public class BaseModelInterceptor implements Interceptor {
         continue;
       }
 
-      if (baseModelSource.ifValue(fieldName)) {
+      if (baseModelSource.ifObj(fieldName)) {
         ParameterMapping parameterMapping = buildParameterMapping(field, fieldName, configuration);
         parameterMappingList.add(parameterMapping);
       }
@@ -457,7 +457,7 @@ public class BaseModelInterceptor implements Interceptor {
     List<AdditionAttr> additionAttrList = additionWrapper.getInjectedAdditionAttrList();
     try {
       for (AdditionAttr additionAttr : additionAttrList) {
-        if (additionAttr.isIfValue()) {
+        if (additionAttr.isIfObj()) {
           boundSql.setAdditionalParameter(additionAttr.getName(),
                   additionAttr.getOrEvaluate(additionWrapper.getOriginalParam(), baseModelELEvaluator::evaluate));
         }
@@ -466,7 +466,7 @@ public class BaseModelInterceptor implements Interceptor {
       return invocation.proceed();
     } finally {
       for (AdditionAttr additionAttr : additionAttrList) {
-        if (additionAttr.isIfValue()) {
+        if (additionAttr.isIfObj()) {
           boundSql.getAdditionalParameters().remove(additionAttr.getName());
         }
       }
@@ -614,19 +614,19 @@ public class BaseModelInterceptor implements Interceptor {
       return;
     }
     for (String fieldName : fieldNameList) {
-      if (!baseModelSource.ifValue(fieldName)) {
+      if (!baseModelSource.ifObj(fieldName)) {
         continue;
       }
       if (fillMode == BaseModelContext.FILL_MODE_FORCE) {
-        metaObject.setValue(fieldName, baseModelSource.getValue(fieldName, baseModel));
+        metaObject.setValue(fieldName, baseModelSource.getObj(fieldName, baseModel));
       } else if (fillMode == BaseModelContext.FILL_MODE_NULL) {
         if (metaObject.getValue(fieldName) == null) {
-          metaObject.setValue(fieldName, baseModelSource.getValue(fieldName, baseModel));
+          metaObject.setValue(fieldName, baseModelSource.getObj(fieldName, baseModel));
         }
       } else if (fillMode == BaseModelContext.FILL_MODE_EMPTY) {
         Object value = metaObject.getValue(fieldName);
         if (value == null || ("".equals(value))) {
-          metaObject.setValue(fieldName, baseModelSource.getValue(fieldName, baseModel));
+          metaObject.setValue(fieldName, baseModelSource.getObj(fieldName, baseModel));
         }
       } else {
         throw new IllegalArgumentException("unsupported fill mode : %s");

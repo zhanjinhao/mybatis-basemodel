@@ -42,41 +42,41 @@ public interface UserMapper {
    */
   UserWithHost queryById(@Param("id") Long id);
 
-  @AdditionalValue(name = SimpleBaseModel.F_MODIFY_TIME, expression = "now(3)", jdbcType = JdbcType.TIMESTAMP, ifValue = false)
-  @AdditionalValue(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
-  @AdditionalValue(name = SimpleBaseModel.F_MODIFIER_NAME, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
-  @AdditionalValue(name = SimpleBaseModel.F_CREATE_TIME, expression = "now(3)", jdbcType = JdbcType.TIMESTAMP, ifValue = false)
-  @AdditionalValue(name = SimpleBaseModel.F_CREATOR, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
-  @AdditionalValue(name = SimpleBaseModel.F_CREATOR_NAME, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  @AdditionalValue(name = SimpleBaseModel.F_MODIFY_TIME, expression = "now(3)", jdbcType = JdbcType.TIMESTAMP, ifObj = false)
+  @AdditionalValue(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
+  @AdditionalValue(name = SimpleBaseModel.F_MODIFIER_NAME, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
+  @AdditionalValue(name = SimpleBaseModel.F_CREATE_TIME, expression = "now(3)", jdbcType = JdbcType.TIMESTAMP, ifObj = false)
+  @AdditionalValue(name = SimpleBaseModel.F_CREATOR, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
+  @AdditionalValue(name = SimpleBaseModel.F_CREATOR_NAME, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
   void insert2(@Param("nickName") String nickName, @Param("age") Integer age, @Param("birthday") LocalDateTime birthday);
 
-  @AdditionalValue(name = SimpleBaseModel.F_MODIFY_TIME, expression = "now(3)", jdbcType = JdbcType.TIMESTAMP, ifValue = false)
-  @AdditionalValue(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
-  @AdditionalValue(name = SimpleBaseModel.F_MODIFIER_NAME, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  @AdditionalValue(name = SimpleBaseModel.F_MODIFY_TIME, expression = "now(3)", jdbcType = JdbcType.TIMESTAMP, ifObj = false)
+  @AdditionalValue(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
+  @AdditionalValue(name = SimpleBaseModel.F_MODIFIER_NAME, expression = SimpleBaseModelSource.USER_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
   int updateById2(@Param("id") Long id, @Param("nickName") String nickName, @Param("age") Integer age, @Param("birthday") LocalDateTime birthday);
 
   /**
    * 新增数据
    */
-  @AdditionalValue(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  @AdditionalValue(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
   int insert3(User user);
 
   /**
    * 按ID更新数据
    */
-  @AdditionalValue(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  @AdditionalValue(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
   int updateById3(User user);
 
   /**
    * 新增数据
    */
-  @AdditionalValue(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  @AdditionalValue(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
   int insert4(SimpleUser user);
 
   /**
    * 按ID更新数据
    */
-  @AdditionalValue(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifValue = true)
+  @AdditionalValue(name = "host", expression = SimpleBaseModelSource.HOST_EL, jdbcType = JdbcType.VARCHAR, ifObj = true)
   int updateById4(SimpleUser user);
 
   @AdditionalParam(name = SimpleBaseModel.F_MODIFIER, expression = SimpleBaseModelSource.USER_EL)
@@ -97,7 +97,7 @@ public interface UserMapper {
   @AdditionalBaseModel(SimpleBaseModel.class)
   int updateById5(@Param("id") Long id, @Param("nickName") String nickName, @Param("age") Integer age, @Param("birthday") LocalDateTime birthday);
 
-  @AdditionalParam(name = "nicknameList", expression = {"a", "b"}, valuePreEvaluate = false)
+  @AdditionalParam(name = "nicknameList", expression = {"a", "b"}, objPreEvaluate = false)
   List<User> queryByNickNameList();
 
 }

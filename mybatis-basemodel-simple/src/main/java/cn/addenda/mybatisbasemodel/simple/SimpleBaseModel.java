@@ -45,13 +45,13 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
   @Getter
   @Setter
   @InsertField
-  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifValue = true)
+  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifObj = true)
   private String creator;
 
   @Setter
   @Getter
   @InsertField
-  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifValue = true)
+  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifObj = true)
   private String creatorName;
 
   @Getter
@@ -59,28 +59,28 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
   @InsertField
   @JsonSerialize(using = LocalDateTimeStrSerializer.class)
   @JsonDeserialize(using = LocalDateTimeStrDeSerializer.class)
-  @BaseModelExpression(expression = "now(3)", ifValue = false)
+  @BaseModelExpression(expression = "now(3)", ifObj = false)
   private LocalDateTime createTime;
 
   @Getter
   @Setter
   @InsertField
   @UpdateField
-  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifValue = true)
+  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifObj = true)
   private String modifier;
 
   @Getter
   @Setter
   @InsertField
   @UpdateField
-  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifValue = true)
+  @BaseModelExpression(expression = SimpleBaseModelSource.USER_EL, ifObj = true)
   private String modifierName;
 
   @Getter
   @Setter
   @InsertField
   @UpdateField
-  @BaseModelExpression(expression = "now(3)", ifValue = false)
+  @BaseModelExpression(expression = "now(3)", ifObj = false)
   @JsonSerialize(using = LocalDateTimeStrSerializer.class)
   @JsonDeserialize(using = LocalDateTimeStrDeSerializer.class)
   private LocalDateTime modifyTime;

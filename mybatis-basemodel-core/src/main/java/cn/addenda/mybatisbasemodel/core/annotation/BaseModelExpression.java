@@ -13,6 +13,6 @@ public @interface BaseModelExpression {
 
   String expression();
 
-  boolean ifValue();
+  boolean ifObj();
 
 }

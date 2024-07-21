@@ -28,7 +28,7 @@ public @interface AdditionalValue {
   String columnName() default AdditionAttr.BASE_MODEL_COLUMN;
 
   /**
-   * {@link AdditionalValue#ifValue()} 为true时，会使用{@link BaseModelELEvaluator#evaluate(String, Object)}解析表达式获得值。
+   * {@link AdditionalValue#ifObj()} 为true时，会使用{@link BaseModelELEvaluator#evaluate(String, Object)}解析表达式获得值。
    * 否则，会使用{@link JSqlParserUtils#parseExpression(String)}解析表达式获得{@link net.sf.jsqlparser.expression.Expression}
    */
   String expression();
@@ -36,7 +36,7 @@ public @interface AdditionalValue {
   /**
    * {@link AdditionalValue#expression()} 是不是值
    */
-  boolean ifValue();
+  boolean ifObj();
 
   /**
    * 注入的参数的类型
@@ -44,15 +44,15 @@ public @interface AdditionalValue {
   JdbcType jdbcType();
 
   /**
-   * 当 {@link AdditionalValue#ifValue()} 为false时。
+   * 当 {@link AdditionalValue#ifObj()} 为false时。
    * 若此参数配为true，调用{@link JSqlParserUtils#parseExpression(String)}前调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
    */
   boolean expressionPreEvaluate() default false;
 
   /**
-   * 当 {@link AdditionalValue#ifValue()} 为true时。
+   * 当 {@link AdditionalValue#ifObj()} 为true时。
    * 若此参数配为true，使用前调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
    */
-  boolean valuePreEvaluate() default true;
+  boolean objPreEvaluate() default true;
 
 }
