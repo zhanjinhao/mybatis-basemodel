@@ -34,7 +34,7 @@ public @interface AdditionalValue {
   String expression();
 
   /**
-   * {@link AdditionalValue#expression()} 是不是数值
+   * {@link AdditionalValue#expression()} 是不是值
    */
   boolean ifValue();
 
@@ -47,6 +47,12 @@ public @interface AdditionalValue {
    * 当 {@link AdditionalValue#ifValue()} 为false时。
    * 若此参数配为true，调用{@link JSqlParserUtils#parseExpression(String)}前调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
    */
-  boolean alwaysEvaluate() default false;
+  boolean expressionPreEvaluate() default false;
+
+  /**
+   * 当 {@link AdditionalValue#ifValue()} 为true时。
+   * 若此参数配为true，使用前调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
+   */
+  boolean valuePreEvaluate() default true;
 
 }

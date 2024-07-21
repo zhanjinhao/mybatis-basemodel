@@ -97,5 +97,8 @@ public interface UserMapper {
   @AdditionalBaseModel(SimpleBaseModel.class)
   int updateById5(@Param("id") Long id, @Param("nickName") String nickName, @Param("age") Integer age, @Param("birthday") LocalDateTime birthday);
 
+  @AdditionalParam(name = "nicknameList", expression = {"a", "b"}, valuePreEvaluate = false)
+  List<User> queryByNickNameList();
+
 }
 

@@ -23,6 +23,11 @@ public @interface AdditionalParam {
   /**
    * 使用{@link BaseModelELEvaluator#evaluate(String, Object)}解析表达式获得值
    */
-  String expression();
+  String[] expression();
+
+  /**
+   * 若此参数配为true，使用前会调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
+   */
+  boolean valuePreEvaluate() default true;
 
 }

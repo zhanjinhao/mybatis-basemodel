@@ -170,21 +170,26 @@ public class BaseModelInterceptor implements Interceptor {
 
       if (!additionAttr.isIfValue()) {
         String expressionStr;
-        if (additionAttr.isAlwaysEvaluate()) {
-          Object evaluate = baseModelELEvaluator.evaluate(additionAttr.getExpression(), additionWrapper.getOriginalParam());
+        if (additionAttr.isExpressionPreEvaluate()) {
+          Object evaluate = additionAttr.getOrEvaluate(additionWrapper.getOriginalParam(), baseModelELEvaluator::evaluate);
           if (evaluate instanceof String) {
             expressionStr = (String) evaluate;
           } else {
-            throw new BaseModelException(String.format("The result of expression evaluation is not of type String. expression:[%s], result:[%s].", additionAttr.getExpression(), evaluate));
+            throw new BaseModelException(String.format("The result of expression evaluation is not of type String. expression:%s, result:[%s].", Arrays.toString(additionAttr.getExpression()), evaluate));
           }
         } else {
-          expressionStr = additionAttr.getExpression();
+          String[] expression = additionAttr.getExpression();
+          if (expression.length == 1) {
+            expressionStr = expression[0];
+          } else {
+            throw new BaseModelException(String.format("The length of expression array can only be 1. expression:%s.", Arrays.toString(expression)));
+          }
         }
         Expression expression = JSqlParserUtils.parseExpression(expressionStr);
         if (expression == null) {
           throw new UnsupportedOperationException(
                   String.format("mappedStatement [%s], can not parse expression from [%s], current name is [%s].",
-                          mappedStatement.getId(), additionAttr.getExpression(), additionAttr.getName()));
+                          mappedStatement.getId(), expressionStr, additionAttr.getName()));
         }
         jSqlParserStatementWrapper.addColumn(new Column(columnName), expression);
       } else {

@@ -204,5 +204,17 @@
     where id = #{id,jdbcType=INTEGER}
   </update>
 
+  <select id="queryByNickNameList" resultMap="UserMap">
+    select
+    <include refid="allColumn"/>
+    from `user`
+    where
+    <if test="nicknameList != null and nicknameList.size() != 0">
+      nickname in
+      <foreach collection="nicknameList" close=")" item="nickname" open="(" separator=",">
+        #{nickname,jdbcType=VARCHAR}
+      </foreach>
+    </if>
+  </select>
 </mapper>
 
