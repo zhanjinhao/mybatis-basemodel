@@ -54,8 +54,6 @@ import java.util.stream.Collectors;
 public class BaseModelInterceptor implements Interceptor {
   private BaseModelELEvaluator baseModelELEvaluator;
   private static final String BASE_MODEL_EL_EVALUATOR_NAME = "baseModelELEvaluator";
-  //  private BaseModelSource baseModelSource;
-//  private static final String BASE_MODEL_SOURCE_NAME = "baseModelSource";
 
   @Override
   public Object intercept(Invocation invocation) throws Throwable {
@@ -98,17 +96,11 @@ public class BaseModelInterceptor implements Interceptor {
     if ("prepare".equals(method.getName())) {
       if (sqlCommandType == SqlCommandType.INSERT) {
         Object parameterObject = boundSql.getParameterObject();
-//        if (parameterObject instanceof BaseModel) {
-//          rewriteInsertSql(statementHandlerMetaObject, mappedStatement, (BaseModel) parameterObject);
-//        }
         if (parameterObject instanceof AdditionWrapper) {
           rewriteInsertSql(statementHandlerMetaObject, mappedStatement, (AdditionWrapper<?>) parameterObject);
         }
       } else if (sqlCommandType == SqlCommandType.UPDATE) {
         Object parameterObject = boundSql.getParameterObject();
-//        if (parameterObject instanceof BaseModel) {
-//          rewriteUpdateSql(statementHandlerMetaObject, mappedStatement, (BaseModel) parameterObject);
-//        }
         if (parameterObject instanceof AdditionWrapper) {
           rewriteUpdateSql(statementHandlerMetaObject, mappedStatement, (AdditionWrapper<?>) parameterObject);
         }
@@ -116,17 +108,11 @@ public class BaseModelInterceptor implements Interceptor {
     } else if ("parameterize".equals(method.getName())) {
       if (sqlCommandType == SqlCommandType.INSERT) {
         Object parameterObject = boundSql.getParameterObject();
-//        if (parameterObject instanceof BaseModel) {
-//          injectInsertSql(statementHandlerMetaObject, mappedStatement, (BaseModel) parameterObject);
-//        }
         if (parameterObject instanceof AdditionWrapper) {
           injectInsertSql(statementHandlerMetaObject, mappedStatement, (AdditionWrapper<?>) parameterObject);
         }
       } else if (sqlCommandType == SqlCommandType.UPDATE) {
         Object parameterObject = boundSql.getParameterObject();
-//        if (parameterObject instanceof BaseModel) {
-//          injectUpdateSql(statementHandlerMetaObject, mappedStatement, (BaseModel) parameterObject);
-//        }
         if (parameterObject instanceof AdditionWrapper) {
           injectUpdateSql(statementHandlerMetaObject, mappedStatement, (AdditionWrapper<?>) parameterObject);
         }
@@ -262,91 +248,6 @@ public class BaseModelInterceptor implements Interceptor {
     return parameterMappingList;
   }
 
-//  private void rewriteInsertSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, BaseModel baseModel) {
-//    StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
-//    BoundSql boundSql = statementHandler.getBoundSql();
-//    Insert insert = parseAndGetStatement(statementHandler, Insert.class);
-//
-//    String newSql = doRewriteSql(mappedStatement, BaseModelMetaDataUtils.getAllFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(insert));
-//    replaceSql(statementHandlerMetaObject, boundSql, mappedStatement, newSql);
-//  }
-
-//  private void rewriteUpdateSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, BaseModel baseModel) {
-//    StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
-//    BoundSql boundSql = statementHandler.getBoundSql();
-//    Update update = parseAndGetStatement(statementHandler, Update.class);
-//
-//    String newSql = doRewriteSql(mappedStatement, BaseModelMetaDataUtils.getUpdateFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(update));
-//    replaceSql(statementHandlerMetaObject, boundSql, mappedStatement, newSql);
-//  }
-
-//  private String doRewriteSql(MappedStatement mappedStatement, List<String> injectedFieldNameList, BaseModel baseModel,
-//                              JSqlParserStatementWrapper jSqlParserStatementWrapper) {
-//    List<Column> columnList = jSqlParserStatementWrapper.getColumnList();
-//    List<String> columnNameList = formatColumnName(columnList);
-//
-//    for (String fieldName : injectedFieldNameList) {
-//      Field field = BaseModelMetaDataUtils.getFieldByFieldName(baseModel, fieldName);
-//      String columnName = calculateColumnName(field, columnNameList);
-//      if (columnName == null) {
-//        continue;
-//      }
-//
-//      if (!baseModelSource.ifObj(fieldName)) {
-//        String expressionStr = baseModelSource.getExpression(fieldName, baseModel);
-//        Expression expression = JSqlParserUtils.parseExpression(expressionStr);
-//        if (expression == null) {
-//          throw new UnsupportedOperationException(
-//                  String.format("mappedStatement [%s], can not parse expression from [%s], current fieldName is [%s].",
-//                          mappedStatement.getId(), expressionStr, fieldName));
-//        }
-//        jSqlParserStatementWrapper.addColumn(new Column(columnName), expression);
-//      } else {
-//        jSqlParserStatementWrapper.addColumn(new Column(columnName), new JdbcParameter());
-//      }
-//    }
-//
-//    return jSqlParserStatementWrapper.toString();
-//  }
-
-//  private void injectInsertSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, BaseModel baseModel) {
-//    StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
-//    Insert insert = parseAndGetStatement2(statementHandler, Insert.class);
-//
-//    List<ParameterMapping> injectedParameterMappings = generateParameterMapping(mappedStatement, BaseModelMetaDataUtils.getAllFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(insert));
-//    replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappings, 0);
-//  }
-
-//  private void injectUpdateSql(MetaObject statementHandlerMetaObject, MappedStatement mappedStatement, BaseModel baseModel) {
-//    StatementHandler statementHandler = (StatementHandler) statementHandlerMetaObject.getOriginalObject();
-//    Update update = parseAndGetStatement2(statementHandler, Update.class);
-//
-//    List<ParameterMapping> injectedParameterMappings = generateParameterMapping(mappedStatement, BaseModelMetaDataUtils.getUpdateFieldNameList(baseModel), baseModel, JSqlParserUtils.wrap(update));
-//    replaceParameterMapping(statementHandler, mappedStatement, injectedParameterMappings, JSqlParserUtils.countJdbcParameter(update.getWhere()));
-//  }
-
-//  private List<ParameterMapping> generateParameterMapping(MappedStatement mappedStatement, List<String> injectedFieldNameList, BaseModel baseModel,
-//                                                          JSqlParserStatementWrapper jSqlParserStatementWrapper) {
-//    Configuration configuration = mappedStatement.getConfiguration();
-//    List<Column> columnList = jSqlParserStatementWrapper.getColumnList();
-//    List<String> columnNameList = formatColumnName(columnList);
-//
-//    List<ParameterMapping> parameterMappingList = new ArrayList<>();
-//    for (String fieldName : injectedFieldNameList) {
-//      Field field = BaseModelMetaDataUtils.getFieldByFieldName(baseModel, fieldName);
-//      String columnName = calculateColumnName(field, columnNameList);
-//      if (columnName == null) {
-//        continue;
-//      }
-//
-//      if (baseModelSource.ifObj(fieldName)) {
-//        ParameterMapping parameterMapping = buildParameterMapping(field, fieldName, configuration);
-//        parameterMappingList.add(parameterMapping);
-//      }
-//    }
-//    return parameterMappingList;
-//  }
-
   private void replaceSql(MetaObject statementHandlerMetaObject, BoundSql boundSql, MappedStatement mappedStatement, String newSql) {
     Configuration configuration = mappedStatement.getConfiguration();
     if (boundSql instanceof BaseModelBoundSql) {
@@ -394,17 +295,6 @@ public class BaseModelInterceptor implements Interceptor {
     return (T) statement;
   }
 
-//  private String calculateColumnName(Field field, List<String> columnNameList) {
-//    String columnName = BaseModelMetaDataUtils.getColumnName(field);
-//
-//     属性去重，对于用户已经添加的字段，不能再自动注入
-//    if (columnNameList.contains(columnName)) {
-//      return null;
-//    }
-//
-//    return columnName;
-//  }
-
   private String calculateColumnName(AdditionAttr additionAttr, List<String> columnNameList) {
     String columnName = BaseModelMetaDataUtils.getColumnName(additionAttr);
 
@@ -424,15 +314,6 @@ public class BaseModelInterceptor implements Interceptor {
 
     Object parameterObject = parameterHandler.getParameterObject();
     MetaObject metaObject = SystemMetaObject.forObject(parameterHandler);
-//    if (parameterObject instanceof BaseModel) {
-//      MappedStatement mappedStatement = (MappedStatement) metaObject.getValue("mappedStatement");
-//      SqlCommandType sqlCommandType = mappedStatement.getSqlCommandType();
-//      if (sqlCommandType == SqlCommandType.INSERT) {
-//        fillInsert((BaseModel) parameterObject, mappedStatement.getConfiguration());
-//      } else if (sqlCommandType == SqlCommandType.UPDATE) {
-//        fillUpdate((BaseModel) parameterObject, mappedStatement.getConfiguration());
-//      }
-//    }
 
     if (!(parameterObject instanceof AdditionWrapper)) {
       return invocation.proceed();
@@ -558,32 +439,7 @@ public class BaseModelInterceptor implements Interceptor {
         throw new BaseModelException(msg);
       }
     }
-//    if (baseModelSource == null) {
-//      if (properties.containsKey(BASE_MODEL_SOURCE_NAME)) {
-//        String baseModelSourceName = (String) properties.get(BASE_MODEL_SOURCE_NAME);
-//        if (baseModelSourceName != null) {
-//          baseModelSource = InstanceUtils.newInstance(baseModelSourceName, BaseModelSource.class);
-//        }
-//      } else {
-//        String msg = String.format("[%s] of [%s] can not be null！", BASE_MODEL_SOURCE_NAME, this.getClass());
-//        throw new BaseModelException(msg);
-//      }
-//    }
   }
-
-
-  /**
-   * 针对BaseModel的一个属性创建ParameterMapping对象
-   */
-//  private ParameterMapping buildParameterMapping(Field field, String fieldName, Configuration configuration) {
-//    if (field == null) {
-//      throw new NullPointerException(String.format("field [%s] 为空！", fieldName));
-//    }
-//    Class<?> propertyType = field.getType();
-//    ParameterMapping.Builder builder = new ParameterMapping.Builder(configuration, fieldName, propertyType);
-//    builder.jdbcType(MsIdAnnotationUtils.calculateJdbcType(field));
-//    return builder.build();
-//  }
 
   /**
    * 针对AdditionAttr创建ParameterMapping对象
@@ -594,43 +450,6 @@ public class BaseModelInterceptor implements Interceptor {
     builder.jdbcType(jdbcType);
     return builder.build();
   }
-
-//  private void fillInsert(BaseModel baseModel, Configuration configuration) {
-//    List<String> allFieldNameList = BaseModelMetaDataUtils.getAllFieldNameList(baseModel);
-//    doFill(allFieldNameList, baseModel, configuration);
-//  }
-
-//  private void fillUpdate(BaseModel baseModel, Configuration configuration) {
-//    List<String> updateFieldNameList = BaseModelMetaDataUtils.getUpdateFieldNameList(baseModel);
-//    doFill(updateFieldNameList, baseModel, configuration);
-//  }
-
-//  private void doFill(List<String> fieldNameList, BaseModel baseModel, Configuration configuration) {
-//    MetaObject metaObject = configuration.newMetaObject(baseModel);
-//    short fillMode = BaseModelContext.getFillMode();
-//    if (fillMode == BaseModelContext.FILL_MODE_SKIP) {
-//      return;
-//    }
-//    for (String fieldName : fieldNameList) {
-//      if (!baseModelSource.ifObj(fieldName)) {
-//        continue;
-//      }
-//      if (fillMode == BaseModelContext.FILL_MODE_FORCE) {
-//        metaObject.setValue(fieldName, baseModelSource.getObj(fieldName, baseModel));
-//      } else if (fillMode == BaseModelContext.FILL_MODE_NULL) {
-//        if (metaObject.getValue(fieldName) == null) {
-//          metaObject.setValue(fieldName, baseModelSource.getObj(fieldName, baseModel));
-//        }
-//      } else if (fillMode == BaseModelContext.FILL_MODE_EMPTY) {
-//        Object value = metaObject.getValue(fieldName);
-//        if (value == null || ("".equals(value))) {
-//          metaObject.setValue(fieldName, baseModelSource.getObj(fieldName, baseModel));
-//        }
-//      } else {
-//        throw new IllegalArgumentException("unsupported fill mode : %s");
-//      }
-//    }
-//  }
 
   private List<String> formatColumnName(List<Column> columnList) {
     return columnList.stream()

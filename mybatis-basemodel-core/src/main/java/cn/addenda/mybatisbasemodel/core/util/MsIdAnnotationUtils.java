@@ -103,9 +103,6 @@ public class MsIdAnnotationUtils {
     }
     AdditionalBaseModel additionalBaseModel = additionalBaseModels[0];
     Class<? extends BaseModel> baseModelClass = additionalBaseModel.value();
-//    if (BaseModelAdapter.class.isAssignableFrom(baseModelClass)) {
-//      throw new BaseModelException(String.format("@AdditionalBaseModel does not support BaseModelAdapter[%s]", baseModelClass));
-//    }
     return doGenerateAdditionAttrs(fieldMapFunction.apply(baseModelClass));
   }
 
