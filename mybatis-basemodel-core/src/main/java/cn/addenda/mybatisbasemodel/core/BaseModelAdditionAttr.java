@@ -40,6 +40,7 @@ public class BaseModelAdditionAttr extends AdditionAttr {
   /**
    * @return 这个方法是幂等的，即多次调用返回相同的结果
    */
+  @Override
   public Object getOrEvaluateObj(Object param, BiFunction<String, Object, Object> function) {
     short fillMode = BaseModelContext.getFillMode();
     if (fillMode == BaseModelContext.FILL_MODE_SKIP) {

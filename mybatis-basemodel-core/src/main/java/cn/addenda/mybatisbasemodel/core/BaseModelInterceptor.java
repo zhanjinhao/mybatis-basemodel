@@ -4,6 +4,7 @@ import cn.addenda.mybatisbasemodel.core.util.*;
 import cn.addenda.mybatisbasemodel.core.wrapper.AdditionWrapper;
 import cn.addenda.mybatisbasemodel.core.wrapper.BaseModelAdditionWrapper;
 import cn.addenda.mybatisbasemodel.core.wrapper.PojoAdditionWrapper;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.JdbcParameter;
@@ -52,7 +53,10 @@ import java.util.stream.Collectors;
 })
 @Slf4j
 public class BaseModelInterceptor implements Interceptor {
+
+  @Setter
   private BaseModelELEvaluator baseModelELEvaluator;
+
   private static final String BASE_MODEL_EL_EVALUATOR_NAME = "baseModelELEvaluator";
 
   @Override

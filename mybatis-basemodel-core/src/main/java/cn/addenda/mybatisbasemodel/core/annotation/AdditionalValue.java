@@ -44,13 +44,13 @@ public @interface AdditionalValue {
   JdbcType jdbcType();
 
   /**
-   * 当 {@link AdditionalValue#ifObj()} 为false时。
+   * 当 {@link AdditionalValue#ifObj()} 为false时，
    * 若此参数配为true，调用{@link JSqlParserUtils#parseExpression(String)}前调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
    */
   boolean expressionPreEvaluate() default false;
 
   /**
-   * 当 {@link AdditionalValue#ifObj()} 为true时。
+   * 当 {@link AdditionalValue#ifObj()} 为true时，
    * 若此参数配为true，使用前调用{@link BaseModelELEvaluator#evaluate(String, Object)}解析一下
    */
   boolean objPreEvaluate() default true;
