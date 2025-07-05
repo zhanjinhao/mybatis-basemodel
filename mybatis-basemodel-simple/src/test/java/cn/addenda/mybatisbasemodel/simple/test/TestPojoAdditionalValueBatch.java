@@ -1,6 +1,6 @@
 package cn.addenda.mybatisbasemodel.simple.test;
 
-import cn.addenda.mybatisbasemodel.core.helper.BatchDmlHelper;
+import cn.addenda.component.mybatis.helper.BatchDmlHelper;
 import cn.addenda.mybatisbasemodel.simple.SimpleBaseModel;
 import cn.addenda.mybatisbasemodel.simple.SimpleUser;
 import cn.addenda.mybatisbasemodel.simple.UserMapper;

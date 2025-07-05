@@ -158,7 +158,7 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
   }
 
   public static String getHostTl() {
-    Stack<String> hosts = USER_TL.get();
+    Stack<String> hosts = HOST_TL.get();
     return hosts.peek();
   }
 

@@ -25,8 +25,10 @@
     <slf4j.version>1.7.36</slf4j.version>
     <jackson.version>2.13.4</jackson.version>
     <junit.version>5.9.1</junit.version>
+    <junit-platform-launcher.version>1.9.1</junit-platform-launcher.version>
     <h2.version>2.2.224</h2.version>
     <lombok.version>1.18.30</lombok.version>
+    <mybatis-component.version>2.0-SNAPSHOT</mybatis-component.version>
   </properties>
 
   <dependencyManagement>
@@ -69,7 +71,7 @@
       <dependency>
         <groupId>org.junit.platform</groupId>
         <artifactId>junit-platform-launcher</artifactId>
-        <version>1.9.1</version>
+        <version>${junit-platform-launcher.version}</version>
       </dependency>
       <dependency>
         <groupId>com.h2database</groupId>
@@ -80,6 +82,11 @@
         <groupId>org.projectlombok</groupId>
         <artifactId>lombok</artifactId>
         <version>${lombok.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>cn.addenda</groupId>
+        <artifactId>mybatis-component</artifactId>
+        <version>${mybatis-component.version}</version>
       </dependency>
     </dependencies>
   </dependencyManagement>
