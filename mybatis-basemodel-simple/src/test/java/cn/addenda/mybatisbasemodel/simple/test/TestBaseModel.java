@@ -1,7 +1,7 @@
 package cn.addenda.mybatisbasemodel.simple.test;
 
 import cn.addenda.mybatisbasemodel.core.BaseModelException;
-import cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource;
+import cn.addenda.mybatisbasemodel.simple.SimpleBaseModel;
 import cn.addenda.mybatisbasemodel.simple.User;
 import cn.addenda.mybatisbasemodel.simple.UserMapper;
 import org.apache.ibatis.exceptions.PersistenceException;
@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import java.io.IOException;
 import java.io.Reader;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
 
 class TestBaseModel {
@@ -47,7 +49,7 @@ class TestBaseModel {
   void test() {
     AtomicReference<Long> id = new AtomicReference<>();
 
-    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+    SimpleBaseModel.runWithUser("zhangsan", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
@@ -69,7 +71,7 @@ class TestBaseModel {
       }
     });
 
-    SimpleBaseModelSource.runWithUser("lisi", () -> {
+    SimpleBaseModel.runWithUser("lisi", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
@@ -91,18 +93,23 @@ class TestBaseModel {
     });
 
 
-    SimpleBaseModelSource.runWithUser("lisi", () -> {
+    SimpleBaseModel.runWithUser("lisi", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
         User param = new User();
         param.setId(id.get());
         User user1 = mapper.queryByIdAndModifier2(param);
         Assertions.assertNotNull(user1);
+
+        Map<String, Long> mapParam = new HashMap<>();
+        mapParam.put("id", id.get());
+        User user11 = mapper.queryByMap(mapParam);
+        Assertions.assertNotNull(user11);
       }
     });
 
 
-    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+    SimpleBaseModel.runWithUser("zhangsan", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
         User param = new User();
@@ -113,7 +120,7 @@ class TestBaseModel {
     });
 
     PersistenceException zhangsan = Assertions.assertThrows(PersistenceException.class, () -> {
-      SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+      SimpleBaseModel.runWithUser("zhangsan", () -> {
         try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
           UserMapper mapper = sqlSession.getMapper(UserMapper.class);
           User param = new User();

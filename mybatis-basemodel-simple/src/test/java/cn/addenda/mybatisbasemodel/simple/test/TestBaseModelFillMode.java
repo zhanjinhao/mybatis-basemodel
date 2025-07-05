@@ -1,7 +1,7 @@
 package cn.addenda.mybatisbasemodel.simple.test;
 
 import cn.addenda.mybatisbasemodel.core.BaseModelContext;
-import cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource;
+import cn.addenda.mybatisbasemodel.simple.SimpleBaseModel;
 import cn.addenda.mybatisbasemodel.simple.User;
 import cn.addenda.mybatisbasemodel.simple.UserMapper;
 import org.apache.ibatis.io.Resources;
@@ -46,7 +46,7 @@ class TestBaseModelFillMode {
   void test() {
     AtomicReference<Long> id = new AtomicReference<>();
 
-    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+    SimpleBaseModel.runWithUser("zhangsan", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         BaseModelContext.runWithFillMode(BaseModelContext.FILL_MODE_NULL, () -> {
           UserMapper mapper = sqlSession.getMapper(UserMapper.class);
@@ -70,7 +70,7 @@ class TestBaseModelFillMode {
       }
     });
 
-    SimpleBaseModelSource.runWithUser("lisi", () -> {
+    SimpleBaseModel.runWithUser("lisi", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);

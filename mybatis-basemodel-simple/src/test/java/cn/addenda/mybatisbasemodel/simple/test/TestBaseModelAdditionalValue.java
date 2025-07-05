@@ -1,7 +1,7 @@
 
 package cn.addenda.mybatisbasemodel.simple.test;
 
-import cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource;
+import cn.addenda.mybatisbasemodel.simple.SimpleBaseModel;
 import cn.addenda.mybatisbasemodel.simple.User;
 import cn.addenda.mybatisbasemodel.simple.UserMapper;
 import org.apache.ibatis.io.Resources;
@@ -45,8 +45,8 @@ class TestBaseModelAdditionalValue {
   @Test
   void test() {
     AtomicReference<Long> id = new AtomicReference<>();
-    SimpleBaseModelSource.runWithHost("ip1", () -> {
-      SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+    SimpleBaseModel.runWithHost("ip1", () -> {
+      SimpleBaseModel.runWithUser("zhangsan", () -> {
         try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
           UserMapper mapper = sqlSession.getMapper(UserMapper.class);
@@ -70,8 +70,8 @@ class TestBaseModelAdditionalValue {
       });
     });
 
-    SimpleBaseModelSource.runWithHost("ip2", () -> {
-      SimpleBaseModelSource.runWithUser("lisi", () -> {
+    SimpleBaseModel.runWithHost("ip2", () -> {
+      SimpleBaseModel.runWithUser("lisi", () -> {
         try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
           UserMapper mapper = sqlSession.getMapper(UserMapper.class);

@@ -2,7 +2,7 @@ package cn.addenda.mybatisbasemodel.core.util;
 
 import cn.addenda.mybatisbasemodel.core.AdditionAttr;
 import cn.addenda.mybatisbasemodel.core.BaseModel;
-import cn.addenda.mybatisbasemodel.core.BaseModelAdapter;
+import cn.addenda.mybatisbasemodel.core.BaseModelAdditionAttr;
 import cn.addenda.mybatisbasemodel.core.BaseModelException;
 import cn.addenda.mybatisbasemodel.core.annotation.AdditionalBaseModel;
 import cn.addenda.mybatisbasemodel.core.annotation.AdditionalParam;
@@ -11,6 +11,8 @@ import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.SneakyThrows;
 import org.apache.ibatis.mapping.SqlCommandType;
+import org.apache.ibatis.reflection.MetaObject;
+import org.apache.ibatis.reflection.SystemMetaObject;
 import org.apache.ibatis.type.JdbcType;
 
 import java.lang.annotation.Annotation;
@@ -35,6 +37,7 @@ public class MsIdAnnotationUtils {
   private static final Map<String, AdditionalBaseModel[]> ADDITIONAL_BASE_MODEL_MAP = new ConcurrentHashMap<>();
 
   private static final Map<String, List<AdditionAttr>> ADDITION_MAP = new ConcurrentHashMap<>();
+  private static final Map<String, List<AdditionAttr>> ADDITION_MAP2 = new ConcurrentHashMap<>();
 
   public static List<AdditionAttr> extractAddition(String msId, SqlCommandType sqlCommandType) {
     List<AdditionAttr> result = ADDITION_MAP.computeIfAbsent(msId,
@@ -62,6 +65,36 @@ public class MsIdAnnotationUtils {
     return result.stream().map(AdditionAttr::new).collect(Collectors.toList());
   }
 
+  public static List<AdditionAttr> extractAddition(BaseModel baseModel, SqlCommandType sqlCommandType) {
+    MetaObject metaObject = SystemMetaObject.forObject(baseModel);
+    Class<? extends BaseModel> baseModelClazz = baseModel.getClass();
+    List<AdditionAttr> tmp = ADDITION_MAP2.computeIfAbsent(baseModelClazz.getName() + "." + sqlCommandType, aClass -> {
+      List<AdditionAttr> additionAttrList = new ArrayList<>();
+      if (sqlCommandType == SqlCommandType.INSERT) {
+        AdditionAttr[] additionAttrs = doGenerateAdditionAttrs(baseModelClazz, BaseModelMetaDataUtils::getAllFieldMap);
+        if (additionAttrs.length != 0) {
+          additionAttrList.addAll(Arrays.stream(additionAttrs).collect(Collectors.toList()));
+        }
+      } else if (sqlCommandType == SqlCommandType.UPDATE) {
+        AdditionAttr[] additionAttrs = doGenerateAdditionAttrs(baseModelClazz, BaseModelMetaDataUtils::getUpdateFieldMap);
+        if (additionAttrs.length != 0) {
+          additionAttrList.addAll(Arrays.stream(additionAttrs).collect(Collectors.toList()));
+        }
+      }
+      validRepeat(baseModelClazz.getName(), additionAttrList);
+      return additionAttrList;
+    });
+
+    return tmp.stream().map(new Function<AdditionAttr, BaseModelAdditionAttr>() {
+      @Override
+      public BaseModelAdditionAttr apply(AdditionAttr additionAttr) {
+        BaseModelAdditionAttr baseModelAdditionAttr = new BaseModelAdditionAttr(additionAttr);
+        baseModelAdditionAttr.setMetaPojo(metaObject);
+        return baseModelAdditionAttr;
+      }
+    }).collect(Collectors.toList());
+  }
+
   public static AdditionAttr[] generateAdditionAttrs(
           String msId, Function<Class<? extends BaseModel>, Map<String, Field>> fieldMapFunction) {
     AdditionalBaseModel[] additionalBaseModels = extractAdditionalBaseModels(msId);
@@ -70,9 +103,15 @@ public class MsIdAnnotationUtils {
     }
     AdditionalBaseModel additionalBaseModel = additionalBaseModels[0];
     Class<? extends BaseModel> baseModelClass = additionalBaseModel.value();
-    if (BaseModelAdapter.class.isAssignableFrom(baseModelClass)) {
-      throw new BaseModelException(String.format("@AdditionalBaseModel does not support BaseModelAdapter[%s]", baseModelClass));
-    }
+//    if (BaseModelAdapter.class.isAssignableFrom(baseModelClass)) {
+//      throw new BaseModelException(String.format("@AdditionalBaseModel does not support BaseModelAdapter[%s]", baseModelClass));
+//    }
+    return doGenerateAdditionAttrs(fieldMapFunction.apply(baseModelClass));
+  }
+
+  private static AdditionAttr[] doGenerateAdditionAttrs(
+          Class<? extends BaseModel> baseModelClass,
+          Function<Class<? extends BaseModel>, Map<String, Field>> fieldMapFunction) {
     return doGenerateAdditionAttrs(fieldMapFunction.apply(baseModelClass));
   }
 

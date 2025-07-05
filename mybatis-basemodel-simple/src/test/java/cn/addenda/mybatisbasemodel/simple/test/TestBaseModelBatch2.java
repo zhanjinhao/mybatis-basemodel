@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicReference;
 
-class TestBaseModelBatch {
+class TestBaseModelBatch2 {
 
   static SqlSessionFactory sqlSessionFactory;
 
@@ -64,7 +64,6 @@ class TestBaseModelBatch {
         User param2 = new User();
         param2.setNickname("a");
         param2.setAge(2);
-        param2.setBirthday(LocalDateTime.now());
         batchDmlHelper.batch(UserMapper.class, Arrays.asList(param1, param2), (userMapper, user) -> {
           userMapper.insert(user);
         });
@@ -73,6 +72,7 @@ class TestBaseModelBatch {
 
         id1.set(param1.getId());
         User user1 = mapper.queryById(id1.get());
+        Assertions.assertNotNull(user1.getBirthday());
         Assertions.assertEquals("zhangsan", user1.getCreator());
         Assertions.assertEquals("zhangsan", user1.getCreatorName());
         Assertions.assertEquals("zhangsan", user1.getModifier());
@@ -82,6 +82,7 @@ class TestBaseModelBatch {
 
         id2.set(param2.getId());
         User user2 = mapper.queryById(id2.get());
+        Assertions.assertNull(user2.getBirthday());
         Assertions.assertEquals("zhangsan", user2.getCreator());
         Assertions.assertEquals("zhangsan", user2.getCreatorName());
         Assertions.assertEquals("zhangsan", user2.getModifier());
@@ -103,7 +104,6 @@ class TestBaseModelBatch {
         User param2 = new User();
         param2.setId(id2.get());
         param2.setAge(3);
-        param2.setBirthday(LocalDateTime.now());
 
         batchDmlHelper.batch(UserMapper.class, Arrays.asList(param1, param2), (userMapper, user) -> {
           userMapper.updateById(user);
@@ -112,6 +112,7 @@ class TestBaseModelBatch {
         sqlSession.commit();
 
         User user1 = mapper.queryById(id1.get());
+        Assertions.assertNotNull(user1.getBirthday());
         Assertions.assertEquals("zhangsan", user1.getCreator());
         Assertions.assertEquals("zhangsan", user1.getCreatorName());
         Assertions.assertEquals(3, user1.getAge());
@@ -120,6 +121,7 @@ class TestBaseModelBatch {
         Assertions.assertNotEquals(user1.getCreateTime(), user1.getModifyTime());
 
         User user2 = mapper.queryById(id2.get());
+        Assertions.assertNull(user2.getBirthday());
         Assertions.assertEquals("zhangsan", user2.getCreator());
         Assertions.assertEquals("zhangsan", user2.getCreatorName());
         Assertions.assertEquals(3, user2.getAge());

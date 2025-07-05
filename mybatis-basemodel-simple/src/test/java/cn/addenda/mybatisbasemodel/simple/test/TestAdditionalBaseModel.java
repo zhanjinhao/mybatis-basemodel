@@ -1,6 +1,6 @@
 package cn.addenda.mybatisbasemodel.simple.test;
 
-import cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource;
+import cn.addenda.mybatisbasemodel.simple.SimpleBaseModel;
 import cn.addenda.mybatisbasemodel.simple.User;
 import cn.addenda.mybatisbasemodel.simple.UserMapper;
 import org.apache.ibatis.io.Resources;
@@ -46,7 +46,7 @@ class TestAdditionalBaseModel {
   void test() {
     AtomicReference<Long> id = new AtomicReference<>();
 
-    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+    SimpleBaseModel.runWithUser("zhangsan", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
@@ -69,7 +69,7 @@ class TestAdditionalBaseModel {
     });
 
 
-    SimpleBaseModelSource.runWithUser("lisi", () -> {
+    SimpleBaseModel.runWithUser("lisi", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
 
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
@@ -87,7 +87,7 @@ class TestAdditionalBaseModel {
     });
 
 
-    SimpleBaseModelSource.runWithUser("lisi", () -> {
+    SimpleBaseModel.runWithUser("lisi", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
         User user1 = mapper.queryByIdAndModifier(id.get());
@@ -96,7 +96,7 @@ class TestAdditionalBaseModel {
     });
 
 
-    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+    SimpleBaseModel.runWithUser("zhangsan", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
         User user1 = mapper.queryByIdAndModifier(id.get());
@@ -105,7 +105,7 @@ class TestAdditionalBaseModel {
     });
 
 
-    SimpleBaseModelSource.runWithUser("lisi", () -> {
+    SimpleBaseModel.runWithUser("lisi", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
         User user1 = mapper.queryByIdAndModifier4(id.get());
@@ -114,7 +114,7 @@ class TestAdditionalBaseModel {
     });
 
 
-    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+    SimpleBaseModel.runWithUser("zhangsan", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         UserMapper mapper = sqlSession.getMapper(UserMapper.class);
         User user1 = mapper.queryByIdAndModifier4(id.get());

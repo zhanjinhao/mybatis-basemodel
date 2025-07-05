@@ -2,7 +2,7 @@
 package cn.addenda.mybatisbasemodel.simple.test;
 
 import cn.addenda.mybatisbasemodel.core.helper.BatchDmlHelper;
-import cn.addenda.mybatisbasemodel.simple.SimpleBaseModelSource;
+import cn.addenda.mybatisbasemodel.simple.SimpleBaseModel;
 import cn.addenda.mybatisbasemodel.simple.User;
 import cn.addenda.mybatisbasemodel.simple.UserMapper;
 import org.apache.ibatis.io.Resources;
@@ -53,7 +53,7 @@ class TestAdditionalValueBatch {
     AtomicReference<Long> id1 = new AtomicReference<>();
     AtomicReference<Long> id2 = new AtomicReference<>();
 
-    SimpleBaseModelSource.runWithUser("zhangsan", () -> {
+    SimpleBaseModel.runWithUser("zhangsan", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         User param1 = new User();
         param1.setNickname("a");
@@ -92,7 +92,7 @@ class TestAdditionalValueBatch {
       }
     });
 
-    SimpleBaseModelSource.runWithUser("lisi", () -> {
+    SimpleBaseModel.runWithUser("lisi", () -> {
       try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
         User param1 = new User();
         param1.setId(id1.get());

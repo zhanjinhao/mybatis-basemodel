@@ -34,7 +34,13 @@ public class AdditionAttr {
 
   private boolean objPreEvaluate;
 
-  private List<Object> obj;
+  // ----------
+  //  缓存的结果
+  // ----------
+
+  protected List<Object> cachedObj;
+
+  protected List<Object> cachedExpression;
 
   public AdditionAttr() {
   }
@@ -63,19 +69,21 @@ public class AdditionAttr {
 
   public AdditionAttr(AdditionalParam additionalParam) {
     this.setName(additionalParam.name());
+    this.setColumnName(null);
     this.setExpression(additionalParam.expression());
+    this.setJdbcType(null);
     this.setIfObj(true);
     this.setIfInjected(false);
     this.setExpressionPreEvaluate(false);
     this.setObjPreEvaluate(additionalParam.objPreEvaluate());
   }
 
-  public Object getOrEvaluate(Object param, BiFunction<String, Object, Object> function) {
-    if (obj != null) {
-      if (obj.size() == 1) {
-        return obj.get(0);
+  public Object getOrEvaluateObj(Object param, BiFunction<String, Object, Object> function) {
+    if (cachedObj != null) {
+      if (cachedObj.size() == 1) {
+        return cachedObj.get(0);
       }
-      return obj;
+      return cachedObj;
     }
     List<Object> a = new ArrayList<>();
     for (String item : expression) {
@@ -85,8 +93,27 @@ public class AdditionAttr {
         a.add(item);
       }
     }
-    this.obj = a;
-    return getOrEvaluate(param, function);
+    this.cachedObj = a;
+    return getOrEvaluateObj(param, function);
+  }
+
+  public Object getOrEvaluateExpression(Object param, BiFunction<String, Object, Object> function) {
+    if (cachedExpression != null) {
+      if (cachedExpression.size() == 1) {
+        return cachedExpression.get(0);
+      }
+      return cachedExpression;
+    }
+    List<Object> a = new ArrayList<>();
+    for (String item : expression) {
+      if (expressionPreEvaluate) {
+        a.add(function.apply(item, param));
+      } else {
+        a.add(item);
+      }
+    }
+    this.cachedExpression = a;
+    return getOrEvaluateExpression(param, function);
   }
 
 }

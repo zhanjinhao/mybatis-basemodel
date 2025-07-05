@@ -31,9 +31,9 @@ public class BaseModelContext {
   /**
    * 默认填充模式，可以修改
    */
-  private static short fillModeForce = FILL_MODE_FORCE;
+  private static short defaultFillMode = FILL_MODE_FORCE;
 
-  private static final ThreadLocal<Short> FILL_MODE_TL = java.lang.ThreadLocal.withInitial(() -> fillModeForce);
+  private static final ThreadLocal<Short> FILL_MODE_TL = ThreadLocal.withInitial(() -> defaultFillMode);
 
   public static void setFillMode(short s) {
     if (s != FILL_MODE_FORCE && s != FILL_MODE_NULL && s != FILL_MODE_EMPTY && s != FILL_MODE_SKIP) {
@@ -43,7 +43,7 @@ public class BaseModelContext {
   }
 
   public static void resetFillMode() {
-    FILL_MODE_TL.set(fillModeForce);
+    FILL_MODE_TL.set(defaultFillMode);
   }
 
   public static short getFillMode() {
@@ -54,7 +54,7 @@ public class BaseModelContext {
     if (s != FILL_MODE_FORCE && s != FILL_MODE_NULL && s != FILL_MODE_EMPTY && s != FILL_MODE_SKIP) {
       throw new IllegalArgumentException(String.valueOf(s));
     }
-    fillModeForce = s;
+    defaultFillMode = s;
   }
 
   public static void runWithFillMode(short fillMode, Runnable runnable) {

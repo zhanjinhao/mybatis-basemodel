@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 
 public class PojoAdditionWrapper<O> extends AdditionWrapper<O> {
 
-  private final MetaObject metaObject;
+  protected final MetaObject metaObject;
 
   public PojoAdditionWrapper(BaseModelELEvaluator baseModelELEvaluator,
                              O object, List<AdditionAttr> additionAttrList) {
@@ -22,6 +22,7 @@ public class PojoAdditionWrapper<O> extends AdditionWrapper<O> {
   @Override
   public void init() {
     super.init();
+    // 校验pojo和Map的key有没有冲突
     for (String key : this.keySet()) {
       if (metaObject.hasGetter(key)) {
         throw new BaseModelException(
@@ -29,7 +30,11 @@ public class PojoAdditionWrapper<O> extends AdditionWrapper<O> {
                         key, super.get(key), originalParam, keySet()));
       }
     }
+    // 校验pojo和Map的additionAttrList有没有冲突
     for (AdditionAttr additionAttr : additionAttrList) {
+      if (!ifValidAttrConflictWithPojo(additionAttr)) {
+        continue;
+      }
       String name = additionAttr.getName();
       if (metaObject.hasSetter(name)) {
         throw new BaseModelException(
@@ -37,6 +42,10 @@ public class PojoAdditionWrapper<O> extends AdditionWrapper<O> {
                         name, additionAttr, originalParam, additionAttrList.stream().map(AdditionAttr::getName).collect(Collectors.toList())));
       }
     }
+  }
+
+  protected boolean ifValidAttrConflictWithPojo(AdditionAttr additionAttr) {
+    return true;
   }
 
   @Override

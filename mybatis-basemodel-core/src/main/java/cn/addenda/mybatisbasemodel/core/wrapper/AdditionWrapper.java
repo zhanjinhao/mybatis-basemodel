@@ -38,6 +38,7 @@ public class AdditionWrapper<O> extends MapperMethod.ParamMap<Object> {
 
   public void init() {
     super.put(ORIGINAL_PARAM_NAME, originalParam);
+    // 校验additionAttrList和Map的key有没有冲突
     for (AdditionAttr additionAttr : additionAttrList) {
       String name = additionAttr.getName();
       if (super.containsKey(name)) {
@@ -69,7 +70,7 @@ public class AdditionWrapper<O> extends MapperMethod.ParamMap<Object> {
           if (!additionAttr.isIfObj()) {
             throw new BaseModelException(String.format("Current addition[%s] is not value.", additionAttr));
           }
-          return additionAttr.getOrEvaluate(originalParam, baseModelELEvaluator::evaluate);
+          return additionAttr.getOrEvaluateObj(originalParam, baseModelELEvaluator::evaluate);
         }
       }
       if (fallback) {
