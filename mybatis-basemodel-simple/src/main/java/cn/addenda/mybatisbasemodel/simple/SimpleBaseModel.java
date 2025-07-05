@@ -104,13 +104,17 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
     }
   }
 
-  public static final String USER_EL = "T(cn.addenda.mybatisbasemodel.simple.SimpleBaseModel).getUserTl()";
+  public static final String USER_EL = "T(cn.addenda.mybatisbasemodel.simple.SimpleBaseModel).peekUser()";
 
-  public static final String HOST_EL = "T(cn.addenda.mybatisbasemodel.simple.SimpleBaseModel).getHostTl()";
+  public static final String HOST_EL = "T(cn.addenda.mybatisbasemodel.simple.SimpleBaseModel).peekHost()";
 
   private static final ThreadLocal<Stack<String>> USER_TL = ThreadLocal.withInitial(() -> null);
 
-  public static void setUserTl(String user) {
+  public static void removeUser() {
+    USER_TL.remove();
+  }
+
+  public static void pushUser(String user) {
     Stack<String> users = USER_TL.get();
     if (users == null) {
       users = new Stack<>();
@@ -119,7 +123,7 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
     users.push(user);
   }
 
-  public static void removeUserTl() {
+  public static void popUser() {
     Stack<String> users = USER_TL.get();
     if (users == null) {
       return;
@@ -130,14 +134,21 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
     }
   }
 
-  public static String getUserTl() {
+  public static String peekUser() {
     Stack<String> users = USER_TL.get();
+    if (users == null) {
+      return null;
+    }
     return users.peek();
   }
 
   private static final ThreadLocal<Stack<String>> HOST_TL = ThreadLocal.withInitial(() -> null);
 
-  public static void setHostTl(String user) {
+  public static void removeHost() {
+    HOST_TL.remove();
+  }
+
+  public static void pushHost(String user) {
     Stack<String> hosts = HOST_TL.get();
     if (hosts == null) {
       hosts = new Stack<>();
@@ -146,7 +157,7 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
     hosts.push(user);
   }
 
-  public static void removeHostTl() {
+  public static void popHost() {
     Stack<String> hosts = HOST_TL.get();
     if (hosts == null) {
       return;
@@ -157,26 +168,29 @@ public abstract class SimpleBaseModel implements Serializable, BaseModel {
     }
   }
 
-  public static String getHostTl() {
+  public static String peekHost() {
     Stack<String> hosts = HOST_TL.get();
+    if (hosts == null) {
+      return null;
+    }
     return hosts.peek();
   }
 
   public static void runWithHost(String host, Runnable runnable) {
     try {
-      setHostTl(host);
+      pushHost(host);
       runnable.run();
     } finally {
-      removeHostTl();
+      popHost();
     }
   }
 
   public static void runWithUser(String user, Runnable runnable) {
     try {
-      setUserTl(user);
+      pushUser(user);
       runnable.run();
     } finally {
-      removeUserTl();
+      popUser();
     }
   }
 

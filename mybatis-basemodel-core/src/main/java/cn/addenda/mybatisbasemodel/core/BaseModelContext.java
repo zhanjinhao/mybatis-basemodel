@@ -3,6 +3,7 @@ package cn.addenda.mybatisbasemodel.core;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
+import java.util.Stack;
 import java.util.function.Supplier;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -33,60 +34,111 @@ public class BaseModelContext {
    */
   private static short defaultFillMode = FILL_MODE_FORCE;
 
-  private static final ThreadLocal<Short> FILL_MODE_TL = ThreadLocal.withInitial(() -> defaultFillMode);
+  private static final ThreadLocal<Stack<Short>> FILL_MODE_TL = ThreadLocal.withInitial(() -> null);
 
-  public static void setFillMode(short s) {
-    if (s != FILL_MODE_FORCE && s != FILL_MODE_NULL && s != FILL_MODE_EMPTY && s != FILL_MODE_SKIP) {
-      throw new IllegalArgumentException(String.valueOf(s));
+  public static void removeFillMode() {
+    FILL_MODE_TL.remove();
+  }
+
+  public static void pushFillMode(short s) {
+    valid(s);
+    Stack<Short> modes = FILL_MODE_TL.get();
+    if (modes == null) {
+      modes = new Stack<>();
+      FILL_MODE_TL.set(modes);
     }
-    FILL_MODE_TL.set(s);
+    modes.push(s);
   }
 
-  public static void resetFillMode() {
-    FILL_MODE_TL.set(defaultFillMode);
+  public static void popFillMode() {
+    Stack<Short> modes = FILL_MODE_TL.get();
+    if (modes == null) {
+      return;
+    }
+    modes.pop();
+    if (modes.isEmpty()) {
+      FILL_MODE_TL.remove();
+    }
   }
 
-  public static short getFillMode() {
-    return FILL_MODE_TL.get();
+  public static short peekFillMode() {
+    Stack<Short> shorts = FILL_MODE_TL.get();
+    if (shorts == null) {
+      return defaultFillMode;
+    }
+    return shorts.peek();
   }
 
   public static void setDefaultFillMode(short s) {
-    if (s != FILL_MODE_FORCE && s != FILL_MODE_NULL && s != FILL_MODE_EMPTY && s != FILL_MODE_SKIP) {
-      throw new IllegalArgumentException(String.valueOf(s));
-    }
+    valid(s);
     defaultFillMode = s;
   }
 
+  static void valid(short s) {
+    if (s != FILL_MODE_FORCE && s != FILL_MODE_NULL && s != FILL_MODE_EMPTY && s != FILL_MODE_SKIP) {
+      throw new IllegalArgumentException(String.valueOf(s));
+    }
+  }
+
   public static void runWithFillMode(short fillMode, Runnable runnable) {
-    setFillMode(fillMode);
+    pushFillMode(fillMode);
     try {
       runnable.run();
     } finally {
-      resetFillMode();
+      popFillMode();
     }
   }
 
   public static <T> T getWithFillMode(short fillMode, Supplier<T> supplier) {
-    setFillMode(fillMode);
+    pushFillMode(fillMode);
     try {
       return supplier.get();
     } finally {
-      resetFillMode();
+      popFillMode();
     }
   }
 
-  private static final ThreadLocal<Boolean> ENABLE_TL = java.lang.ThreadLocal.withInitial(() -> true);
+  private static final ThreadLocal<Stack<Boolean>> ENABLE_TL = java.lang.ThreadLocal.withInitial(() -> null);
+
+  public static void removeAble() {
+    ENABLE_TL.remove();
+  }
 
   public static void disable() {
-    ENABLE_TL.set(false);
+    Stack<Boolean> ables = ENABLE_TL.get();
+    if (ables == null) {
+      ables = new Stack<>();
+      ENABLE_TL.set(ables);
+    }
+    ables.push(false);
   }
 
   public static void enable() {
-    ENABLE_TL.set(true);
+    Stack<Boolean> ables = ENABLE_TL.get();
+    if (ables == null) {
+      ables = new Stack<>();
+      ENABLE_TL.set(ables);
+    }
+    ables.push(true);
+  }
+
+  public static void popAble() {
+    Stack<Boolean> ables = ENABLE_TL.get();
+    if (ables == null) {
+      return;
+    }
+    ables.pop();
+    if (ables.isEmpty()) {
+      ENABLE_TL.remove();
+    }
   }
 
   public static boolean ifEnable() {
-    return ENABLE_TL.get();
+    Stack<Boolean> booleans = ENABLE_TL.get();
+    if (booleans == null) {
+      return true;
+    }
+    return booleans.peek();
   }
 
   public static void runWithDisable(Runnable runnable) {
@@ -94,7 +146,7 @@ public class BaseModelContext {
     try {
       runnable.run();
     } finally {
-      enable();
+      popAble();
     }
   }
 
@@ -103,7 +155,7 @@ public class BaseModelContext {
     try {
       return supplier.get();
     } finally {
-      enable();
+      popAble();
     }
   }
 

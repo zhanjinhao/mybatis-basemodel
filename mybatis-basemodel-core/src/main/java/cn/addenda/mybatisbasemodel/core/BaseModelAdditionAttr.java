@@ -42,7 +42,7 @@ public class BaseModelAdditionAttr extends AdditionAttr {
    */
   @Override
   public Object getOrEvaluateObj(Object param, BiFunction<String, Object, Object> function) {
-    short fillMode = BaseModelContext.getFillMode();
+    short fillMode = BaseModelContext.peekFillMode();
     if (fillMode == BaseModelContext.FILL_MODE_SKIP) {
       return metaPojo.getValue(getName());
     }
