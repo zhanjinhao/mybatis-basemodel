@@ -389,12 +389,12 @@ public class BaseModelInterceptor implements Interceptor {
             additionAttrList.addAll(MsIdAnnotationUtils.extractAddition(baseModel, sqlCommandType));
             BaseModelAdditionWrapper paramWrapper = new BaseModelAdditionWrapper(baseModelELEvaluator, baseModel, additionAttrList);
             paramWrapper.init();
-            replaceKeyGenerator(executor, mappedStatement);
+            replaceKeyGenerator(args, executor);
             args[1] = paramWrapper;
           } else {
             PojoAdditionWrapper<?> paramWrapper = new PojoAdditionWrapper<>(baseModelELEvaluator, arg, additionAttrList);
             paramWrapper.init();
-            replaceKeyGenerator(executor, mappedStatement);
+            replaceKeyGenerator(args, executor);
             args[1] = paramWrapper;
           }
         }
@@ -406,7 +406,7 @@ public class BaseModelInterceptor implements Interceptor {
         additionAttrList.addAll(MsIdAnnotationUtils.extractAddition(baseModel, sqlCommandType));
         BaseModelAdditionWrapper paramWrapper = new BaseModelAdditionWrapper(baseModelELEvaluator, baseModel, additionAttrList);
         paramWrapper.init();
-        replaceKeyGenerator(executor, mappedStatement);
+        replaceKeyGenerator(args, executor);
         args[1] = paramWrapper;
       }
     }
@@ -414,20 +414,63 @@ public class BaseModelInterceptor implements Interceptor {
     return invocation.proceed();
   }
 
-  private void replaceKeyGenerator(Executor executor, MappedStatement mappedStatement) {
+  private void replaceKeyGenerator(Object[] args, Executor executor) {
     if (PluginUtils.isBatchMode(executor)) {
       return;
     }
+    MappedStatement mappedStatement = (MappedStatement) args[0];
     if (mappedStatement.getKeyProperties() == null || mappedStatement.getKeyProperties().length == 0) {
       return;
     }
-    MetaObject metaObject = mappedStatement.getConfiguration().newMetaObject(mappedStatement);
+
+    MappedStatement cloneMappedStatement = cloneMappedStatement(mappedStatement);
+    MetaObject metaObject = cloneMappedStatement.getConfiguration().newMetaObject(cloneMappedStatement);
     Object keyGenerator = metaObject.getValue("keyGenerator");
     if (keyGenerator instanceof BaseModelKeyGenerator) {
       return;
     }
     BaseModelKeyGenerator baseModelKeyGenerator = new BaseModelKeyGenerator();
     metaObject.setValue("keyGenerator", baseModelKeyGenerator);
+    args[0] = cloneMappedStatement;
+  }
+
+  public static MappedStatement cloneMappedStatement(MappedStatement ms) {
+    MappedStatement.Builder builder =
+            new MappedStatement.Builder(ms.getConfiguration(), ms.getId(), ms.getSqlSource(), ms.getSqlCommandType());
+    builder.resource(ms.getResource());
+    builder.parameterMap(ms.getParameterMap());
+    builder.resultMaps(ms.getResultMaps());
+    builder.fetchSize(ms.getFetchSize());
+    builder.timeout(ms.getTimeout());
+    builder.statementType(ms.getStatementType());
+    builder.resultSetType(ms.getResultSetType());
+    builder.cache(ms.getCache());
+    builder.flushCacheRequired(ms.isFlushCacheRequired());
+    builder.useCache(ms.isUseCache());
+    builder.resultOrdered(ms.isResultOrdered());
+
+    builder.keyGenerator(ms.getKeyGenerator());
+    String[] keyProperties = ms.getKeyProperties();
+    if (keyProperties != null) {
+      builder.keyProperty(String.join(",", keyProperties));
+    }
+    String[] keyColumns = ms.getKeyColumns();
+    if (keyColumns != null) {
+      builder.keyColumn(String.join(",", keyColumns));
+    }
+
+    // hasNestedResultMaps：设置resultMaps的时候会设置此字段
+    builder.databaseId(ms.getDatabaseId());
+    // statementLog：new MappedStatement.Builder()会结合msId和Configuration的logPrefix拿
+    builder.lang(ms.getLang());
+    String[] resultSets = ms.getResultSets();
+    if (resultSets != null) {
+      builder.resultSets(String.join(",", resultSets));
+    }
+
+    builder.lang(ms.getLang());
+    builder.dirtySelect(ms.isDirtySelect());
+    return builder.build();
   }
 
   @Override
