@@ -157,7 +157,9 @@ public class BaseModelInterceptor implements Interceptor {
         continue;
       }
 
-      if (!additionAttr.isIfObj()) {
+      if (additionAttr.isIfObj() || Objects.equals(BaseModelContext.FILL_MODE_SKIP, BaseModelContext.peekFillMode())) {
+        jSqlParserStatementWrapper.addColumn(new Column(columnName), new JdbcParameter());
+      } else {
         Object evaluate = additionAttr.getOrEvaluateExpression(additionWrapper.getOriginalParam(), baseModelELEvaluator::evaluate);
         if (!(evaluate instanceof String)) {
           throw new BaseModelException(String.format("The result of expression evaluation is not of type String. expression:%s, result:[%s].", Arrays.toString(additionAttr.getExpression()), evaluate));
@@ -169,8 +171,6 @@ public class BaseModelInterceptor implements Interceptor {
                           mappedStatement.getId(), evaluate, additionAttr.getName()));
         }
         jSqlParserStatementWrapper.addColumn(new Column(columnName), expression);
-      } else {
-        jSqlParserStatementWrapper.addColumn(new Column(columnName), new JdbcParameter());
       }
     }
 
@@ -244,7 +244,7 @@ public class BaseModelInterceptor implements Interceptor {
         continue;
       }
 
-      if (additionAttr.isIfObj()) {
+      if (additionAttr.isIfObj() || Objects.equals(BaseModelContext.FILL_MODE_SKIP, BaseModelContext.peekFillMode())) {
         ParameterMapping parameterMapping = buildParameterMapping(additionAttr.getJdbcType(), additionAttr.getName(), configuration);
         parameterMappingList.add(parameterMapping);
       }
@@ -329,7 +329,7 @@ public class BaseModelInterceptor implements Interceptor {
     List<AdditionAttr> additionAttrList = additionWrapper.getInjectedAdditionAttrList();
     try {
       for (AdditionAttr additionAttr : additionAttrList) {
-        if (additionAttr.isIfObj()) {
+        if (additionAttr.isIfObj() || Objects.equals(BaseModelContext.FILL_MODE_SKIP, BaseModelContext.peekFillMode())) {
           boundSql.setAdditionalParameter(additionAttr.getName(),
                   additionAttr.getOrEvaluateObj(additionWrapper.getOriginalParam(), baseModelELEvaluator::evaluate));
         }
@@ -338,7 +338,7 @@ public class BaseModelInterceptor implements Interceptor {
       return invocation.proceed();
     } finally {
       for (AdditionAttr additionAttr : additionAttrList) {
-        if (additionAttr.isIfObj()) {
+        if (additionAttr.isIfObj() || Objects.equals(BaseModelContext.FILL_MODE_SKIP, BaseModelContext.peekFillMode())) {
           boundSql.getAdditionalParameters().remove(additionAttr.getName());
         }
       }
